@@ -1,11 +1,3 @@
-"""
-1. Inherit data on Baltic imbalance amounts: https://baltic.transparency-dashboard.eu/node/44?mode=table
-2. Inherit data regarding Baltic activations: https://baltic.transparency-dashboard.eu/node/35
-3. Make a graph showing the imbalance in the Baltics, the upward and downward adjustments for the Baltics.
-4. Give an assessment of whether the adjustment activities were always done correctly in the period from 2025-02-07 00:00 CET to 2025-02-11 00:00 CET,
- i.e. the imbalance should have decreased after the activation action.
-"""
-
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
