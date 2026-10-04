@@ -46,13 +46,3 @@ def get_solar_production():
 if __name__ == '__main__':
     get_market_price()
     get_solar_production()
-
-
-
-
-if __name__ == '__main__':
-    parameters = {
-            'start': '2026-09-01T00:00:00.000Z',
-            'end': '2026-09-02T00:00:00.000Z'
-        }
-    call_api(path="/api/transmission/cross-border", params=parameters)
