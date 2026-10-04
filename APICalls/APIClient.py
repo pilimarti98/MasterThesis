@@ -27,6 +27,11 @@ class ApiClient:
         headers: Optional[Dict[str, str]] = None,
     ) -> requests.Response:
 
+        if not path:
+            raise ValueError("Path is required.")
+
+        if params is None:
+            raise ValueError("Parameters are required.")
 
         request_headers = {
             **self.default_headers,
@@ -41,7 +46,7 @@ class ApiClient:
 
         url = f"{self.server.base_url.rstrip('/')}/{path.lstrip('/')}"
 
-        return requests.request(
+        response = requests.request(
             method=method,
             url=url,
             params=params,
@@ -49,3 +54,6 @@ class ApiClient:
             json=json,
             headers=request_headers,
         )
+        response.raise_for_status()
+
+        return response

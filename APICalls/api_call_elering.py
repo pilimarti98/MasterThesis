@@ -2,8 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from APIClient import Server, ApiClient
 
-#
-
 def call_api(path: str, params: dict):
     """ Helper function to make a request from Baltic Transparency Dashboard"""
     server = Server(
