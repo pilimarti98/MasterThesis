@@ -1,6 +1,6 @@
-import requests
 import pandas as pd
-import matplotlib.pyplot as plt
+import csv
+
 from APIClient import Server, ApiClient
 
 def call_api(params: dict):
@@ -14,17 +14,18 @@ def call_api(params: dict):
     response = api.request(
         method="GET",
         path='/api/v1/export',
-        params=params
+        params=params,
+        file_type='json'
     )
 
     return response
 
-def get_afrr_prices():
+def get_afrr_prices(start_date: str, end_date:str):
     """ Requests aFRR bid prices """
     parameters = {
         'id' : 'afrr_bid_prices',
-        'start_date' : '2026-10-01T00:00',
-        'end_date': '2026-10-02T00:00',
+        'start_date' : start_date,
+        'end_date': end_date,
         'output_time_zone' : 'EET',
         'output_format' : 'json'
     }
@@ -32,7 +33,9 @@ def get_afrr_prices():
 
     df = pd.DataFrame(json)
 
-    return df
+    df.to_csv("afrr_prices")
 
 if __name__ == '__main__':
-    get_afrr_prices()
+    start = '2026-10-01T20:59:59'
+    end = '2026-10-10T20:59:59'
+    get_afrr_prices(start_date=start, end_date=end)
