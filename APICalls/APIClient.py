@@ -1,5 +1,8 @@
 from dataclasses import dataclass, field
+from json import JSONDecodeError
 from typing import Any, Dict, Optional
+import logging
+
 
 import requests
 
@@ -20,12 +23,12 @@ class ApiClient:
         self,
         method: str,
         path: str,
+        file_type: str,
         *,
         params: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, str]] = None,
-    ) -> requests.Response:
+        headers: Optional[Dict[str, str]] = None):
 
         if not path:
             raise ValueError("Path is required.")
@@ -56,4 +59,17 @@ class ApiClient:
         )
         response.raise_for_status()
 
-        return response
+        if file_type == 'json':
+            try:
+                return response.json()
+            except JSONDecodeError as e:
+                logging.error(e)
+                return
+        elif file_type == 'csv':
+            try:
+                return response.text
+            except JSONDecodeError as e:
+                logging.error(e)
+                return
+        else:
+            raise TypeError("Only available types are csv or json")
