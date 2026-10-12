@@ -21,7 +21,7 @@ def call_api(params: dict):
     return response
 
 def get_afrr_prices(start_date: str, end_date:str):
-    """ Requests aFRR bid prices """
+    """ Requests aFRR bid prices and returns a JSON object"""
     parameters = {
         'id' : 'afrr_bid_prices',
         'start_date' : start_date,
@@ -31,9 +31,25 @@ def get_afrr_prices(start_date: str, end_date:str):
     }
     json = call_api(params=parameters)
 
-    df = pd.DataFrame(json)
+    # Save the data pertinent to the graph as a dataframe
+    df = pd.DataFrame(json['data']['timeseries'])
 
-    df.to_csv("afrr_prices")
+    # Modify data in order to create the chart
+    df_columns = pd.DataFrame(json['data']['columns'])
+
+    df_columns = df_columns.drop(columns=['index', 'res'])
+
+    # Create a new dataframe with only the information needed for the graph
+    df_columns = df_columns.pivot(index='col', columns='group_level_0', values='label')
+
+    df = df.rename(columns={'to': 'end_date', 'from': 'start_date'})
+
+    # Add the names for each column and create new one with the power from all the Baltic countries
+    df[df_columns.columns[0]] = df['values'].str[0]
+
+    df = df.drop(columns=['values'])
+
+    df.to_csv(r"C:\Users\pilim\Documents\PythonProjects\MasterThesis\Data\afrr_prices.csv")
 
 if __name__ == '__main__':
     start = '2026-10-01T20:59:59'
