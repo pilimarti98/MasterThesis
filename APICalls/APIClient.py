@@ -23,7 +23,7 @@ class ApiClient:
         self,
         method: str,
         path: str,
-        file_type: str,
+        file_type: str = 'csv',
         *,
         params: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,

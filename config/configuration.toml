@@ -1,0 +1,17 @@
+[ENV]
+
+# Elering API configuration
+ELERING_CLIENT_ID = ''
+ELERING_CLIENT_SECRET = ''
+ELERING_EIC = ''
+ELERING_TOKEN_URL = ''
+ELERING_API_BASE_URL = ''
+
+# General settings
+DATE_OFFSET = 'P0D'
+TIMEDELTA = 'P7D'
+TIMESTAMP_START = ''
+TIMESTAMP_END = ''
+
+[[debug]]
+

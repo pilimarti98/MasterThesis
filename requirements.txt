@@ -7,3 +7,7 @@ pydantic_settings==2.15.0
 Requests==2.34.2
 scikit_learn==1.9.1
 structlog==26.1.0
+
+scikit-learn~=1.9.1
+logging~=0.4.9.6
+typing~=3.7.4.3

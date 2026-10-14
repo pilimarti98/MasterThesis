@@ -1,5 +1,6 @@
+from datetime import datetime, timedelta
 import pandas as pd
-import csv
+import logging
 
 from APIClient import Server, ApiClient
 
@@ -33,23 +34,23 @@ def get_afrr_prices(start_date: str, end_date:str):
 
     # Save the data pertinent to the graph as a dataframe
     df = pd.DataFrame(json['data']['timeseries'])
+    if df.empty:
+        logging.error("No data was found")
+    else:
+        # Modify data in order to create the standard format for the csv
+        df_columns = pd.DataFrame(json['data']['columns'])
+        df_columns = df_columns.drop(columns=['index', 'res'])
+        df_columns = df_columns.pivot(index='col', columns='group_level_0', values='label')
+        df[df_columns.columns[0]] = df['values'].str[0]
+        df = df.drop(columns=['values', 'to'])
+        df = df.rename(columns={'from': 'Start Date', 'Estonia': 'aFRR prices'})
+        df["Start Date"] = (
+            pd.to_datetime(df["Start Date"], utc=True)
+            .dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
 
-    # Modify data in order to create the chart
-    df_columns = pd.DataFrame(json['data']['columns'])
+        df.to_csv(f"C:/Users/pilim/Documents/PythonProjects/MasterThesis/Data/afrr_prices_{start_date[:10]}.csv")
 
-    df_columns = df_columns.drop(columns=['index', 'res'])
-
-    # Create a new dataframe with only the information needed for the graph
-    df_columns = df_columns.pivot(index='col', columns='group_level_0', values='label')
-
-    df = df.rename(columns={'to': 'end_date', 'from': 'start_date'})
-
-    # Add the names for each column and create new one with the power from all the Baltic countries
-    df[df_columns.columns[0]] = df['values'].str[0]
-
-    df = df.drop(columns=['values'])
-
-    df.to_csv(r"C:\Users\pilim\Documents\PythonProjects\MasterThesis\Data\afrr_prices.csv")
 
 if __name__ == '__main__':
     start = '2026-10-01T20:59:59'
