@@ -15,3 +15,9 @@ TIMESTAMP_END = ''
 
 [[debug]]
 
+TOKEN_URL = "https://kc.elering.ee/realms/elering-sso/protocol/openid-connect/token"
+
+API = "https://estfeed.elering.ee/api/public/v1"
+
+CLIENT_ID = "6e12edf0-9aaa-433d-b460-896785fcf470"
+CLIENT_SECRET = "R7GDP8kU0qZmepi2Mm9rbsh3dLPj2PKC"

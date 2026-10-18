@@ -1,16 +1,5 @@
-from datetime import datetime, timezone
 import pandas as pd
 from io import StringIO
-
-"""
-To do:
-1. Unify dataframes by start date
-2. Add an option to add rows with new timestamps
-3. Create different functions for the different usages:
-    3.1 RStudio
-    3.2 ML
-    3.3 AMPL
-"""
 
 def turn_csv_str_into_df(csv_str: str) -> pd.DataFrame:
     """ Take the csv from an API request and turn into a dataframe to do modifications """
@@ -29,12 +18,8 @@ def get_dates(start_date: str = None, end_date: str = None, offset: str = None, 
 
 
 
-
-
-
-def unify_data(list_of_dfs: list):
+def unify_data(list_of_dfs: list, path: str):
     """ Get all data from different API calls into a unified dataframe """
-
+    merged_df = pd.concat(list_of_dfs)
     # merge all dataframes into one
-
-    # Save into this directory for MasterThesis python use and MasterThesisStudio for R Studio use
+    return merged_df.to_csv(f"{path}_merged.csv")

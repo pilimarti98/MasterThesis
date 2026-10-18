@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 import pandas as pd
 import logging
 
@@ -21,7 +20,7 @@ def call_api(params: dict):
 
     return response
 
-def get_afrr_prices(start_date: str, end_date:str):
+def get_afrr_prices(start_date: str, end_date:str, path: str = None):
     """ Requests aFRR bid prices and returns a JSON object"""
     parameters = {
         'id' : 'afrr_bid_prices',
@@ -45,14 +44,15 @@ def get_afrr_prices(start_date: str, end_date:str):
         df = df.drop(columns=['values', 'to'])
         df = df.rename(columns={'from': 'Start Date', 'Estonia': 'aFRR prices'})
         df["Start Date"] = (
-            pd.to_datetime(df["Start Date"], utc=True)
-            .dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-        )
+                pd.to_datetime(df["Start Date"], utc=True)
+                + pd.Timedelta(hours=3)
+        ).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         df.to_csv(f"C:/Users/pilim/Documents/PythonProjects/MasterThesis/Data/afrr_prices_{start_date[:10]}.csv")
+        return df
 
 
 if __name__ == '__main__':
-    start = '2026-10-01T20:59:59'
-    end = '2026-10-10T20:59:59'
+    start = '2026-10-01T00:00:00.000Z'
+    end = '2026-10-10T00:00:00.000Z'
     get_afrr_prices(start_date=start, end_date=end)
