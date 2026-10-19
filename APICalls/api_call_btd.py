@@ -1,6 +1,7 @@
 import pandas as pd
 import logging
 
+from config.config import CONFIG
 from APIClient import Server, ApiClient
 
 def call_api(params: dict):
@@ -48,7 +49,7 @@ def get_afrr_prices(start_date: str, end_date:str, path: str = None):
                 + pd.Timedelta(hours=3)
         ).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        df.to_csv(f"C:/Users/pilim/Documents/PythonProjects/MasterThesis/Data/afrr_prices_{start_date[:10]}.csv")
+        df.to_csv(f"C{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/afrr_prices_{start_date[:10]}.csv")
         return df
 
 

@@ -2,6 +2,7 @@ import pandas as pd
 
 from APIClient import Server, ApiClient
 from helper import turn_csv_str_into_df
+from config.config import CONFIG
 
 def call_api(path: str, params: dict):
     """ Helper function to make a request from Baltic Transparency Dashboard"""
@@ -45,7 +46,7 @@ def get_market_price(start_date: str, end_date:str, path_to_directory: str = Non
         df_price['Market Price'] = df_price['Market Price'].astype(float)
 
         # Send csv to Data directory
-        data_path = r'C:\Users\pilim\Documents\PythonProjects\MasterThesis\Data'
+        data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
         df_price.to_csv(f"{data_path}\\market_price_{start_date[:10]}.csv")
         return df_price
     else:
@@ -76,7 +77,7 @@ def get_solar_production(start_date:str, end_date:str, path_to_directory: str = 
         df_solar['Solar Generation'] = df_solar['Solar Generation'].astype(float)
 
         # Send csv to Data directory
-        data_path = r'C:\Users\pilim\Documents\PythonProjects\MasterThesis\Data'
+        data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
         df_solar.to_csv(f"{data_path}\\solar_generation_{start_date[:10]}.csv")
         return df_solar
     else:

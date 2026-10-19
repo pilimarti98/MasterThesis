@@ -1,5 +1,6 @@
 import pandas as pd
 import requests
+
 from config.config import CONFIG
 
 
@@ -34,7 +35,7 @@ def convert_to_csv(start_meter:str, end_meter:str):
             df = pd.DataFrame(meter['accountingIntervals'])
             df = df.rename(columns={'periodStart': 'Start Date'})
             df = df.drop(columns=['productionKwh'])
-            df.to_csv(f"C:/Users/pilim/Documents/PythonProjects/MasterThesis/Data/consumption_{start_meter[:10]}.csv")
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/consumption_{start_meter[:10]}.csv")
             return df
 
 if __name__ == "__main__":
