@@ -42,7 +42,7 @@ def get_afrr_prices(start_date: str, end_date:str, path: str = None):
         df_columns = df_columns.pivot(index='col', columns='group_level_0', values='label')
         df[df_columns.columns[0]] = df['values'].str[0]
         df = df.drop(columns=['values', 'to'])
-        df = df.rename(columns={'from': 'Start Date', 'Estonia': 'aFRR prices'})
+        df = df.rename(columns={'from': 'Start Date', 'Estonia': 'aFRR prices [€/MWh]'})
         df["Start Date"] = (
                 pd.to_datetime(df["Start Date"], utc=True)
                 + pd.Timedelta(hours=3)

@@ -19,7 +19,7 @@ def call_api(path: str, params: dict):
 
     return response
 
-def get_market_price(start_date: str, end_date:str, path: str = None):
+def get_market_price(start_date: str, end_date:str, path_to_directory: str = None):
     """ Request NordPool day-ahead price data in CSV file """
 
     path = "/api/nps/price/csv"
@@ -34,7 +34,7 @@ def get_market_price(start_date: str, end_date:str, path: str = None):
         # Make necessary modifications to data
         df_price = turn_csv_str_into_df(price)
         df_price = df_price.drop(columns=['Ajatempel (UTC)'])
-        df_price = df_price.rename(columns={'Kuupäev (Eesti aeg)': 'Start Date', 'NPS Eesti': 'Market Price'})
+        df_price = df_price.rename(columns={'Kuupäev (Eesti aeg)': 'Start Date', 'NPS Eesti': 'Market Price [€/MWh]'})
 
         df_price["Start Date"] = (
                 pd.to_datetime(df_price["Start Date"], utc=True)
@@ -51,7 +51,7 @@ def get_market_price(start_date: str, end_date:str, path: str = None):
     else:
         raise ValueError("No data was returned")
 
-def get_solar_production(start_date:str, end_date:str, path: str = None):
+def get_solar_production(start_date:str, end_date:str, path_to_directory: str = None):
     """ This method gets power system data for selected time period in CSV file """
 
     path = "/api/system/csv"
@@ -65,7 +65,7 @@ def get_solar_production(start_date:str, end_date:str, path: str = None):
         # Make necessary modifications to data
         df_solar = turn_csv_str_into_df(solar)
         df_solar = df_solar.drop(columns=['Ajatempel (UTC)'])
-        df_solar = df_solar.rename(columns={'Kuupðev (Eesti aeg)': 'Start Date', 'Pðikseseenergia toodang': 'Solar Generation'})
+        df_solar = df_solar.rename(columns={'Kuupðev (Eesti aeg)': 'Start Date', 'Pðikseseenergia toodang': 'Solar Generation [GWh]'})
 
         df_solar["Start Date"] = (
             pd.to_datetime(df_solar["Start Date"], format="%d.%m.%Y %H:%M")
