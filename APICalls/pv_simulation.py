@@ -1,58 +1,77 @@
-import openmeteo_requests
 import pandas as pd
-import logging
+import pvlib.location
+import requests
+from PIL.ImageChops import offset
 
+from helper import float_converter, get_dates
 from config.config import CONFIG
 
-def call_open_meteo_api(start_date:str=None, end_date:str=None):
-	# Setup the Open-Meteo API client with cache and retry on error
-	openmeteo = openmeteo_requests.Client()
+hourly_vars = [
+	"shortwave_radiation",
+	"direct_normal_irradiance",
+	"diffuse_radiation",
+	"temperature_2m",
+	"wind_speed_10m"
+]
 
-	# Make sure all required weather variables are listed here
-	# The order of variables in hourly or daily is important to assign them correctly below
-	# Location variables are stored in configuration file as they contain sensitive data
-	url = "https://api.open-meteo.com/v1/forecast"
+def fetch_weather(start_date:str, end_date:str):
+	""" Get archive data request """
+	url = "https://archive-api.open-meteo.com/v1/archive"
+
 	params = {
-		"latitude": float(CONFIG["ENV"]["LAT"]),
-		"longitude": float(CONFIG["ENV"]["LON"]),
-		"elevation": float(CONFIG["ENV"]["ALT"]),
-		"hourly": "shortwave_radiation",
+		"latitude": float_converter("LAT"),
+		"longitude": float_converter("LON"),
+		"altitude": float_converter("ALT"),
+		"hourly": ",".join(hourly_vars),
+		"timezone": "UTC",
+		"wind_speed_unit":"ms",
 		"start_date": start_date,
 		"end_date": end_date
 	}
-	responses = openmeteo.weather_api(url, params = params)
 
-	return responses
+	r = requests.get(url, params=params, timeout=300)
+	r.raise_for_status()
+	h = r.json()["hourly"]
 
-def get_pv_data(start_date:str = None, end_date:str = None, offset:str=None, timedelta:str=None):
-	""" Get the solar irradiation given parameters latitude, longitude"""
+	df = pd.DataFrame(h).set_index("time")
+	df.index = pd.to_datetime(df.index).tz_localize("EET")
+	return df.rename(columns={
+		"shortwave_radiation": "ghi",
+		"direct_normal_irradiance": "dni",
+		"diffuse_radiation": "dhi",
+		"temperature_2m": "temperature_air",
+		"wind_speed_10m": "wind_speed"}).fillna(0)
 
-	# Process first location. Add a for-loop for multiple locations or weather models
-	response = call_open_meteo_api()[0]
-	logging.info(f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E")
-	logging.info(f"Elevation: {response.Elevation()} m asl")
-	logging.info(f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s")
 
-	# Process hourly data. The order of variables needs to be the same as requested.
-	hourly = response.Hourly()
-	hourly_shortwave_radiation = hourly.Variables(0).ValuesAsNumpy()
+def simulate_pv(wx: pd.DataFrame):
+	""" Given the fetched data, simulate as the generation of a solar panel with given characteristics """
+	location = pvlib.location.Location(float_converter("LAT"), float_converter("LON"), altitude=float_converter("ALT"), tz="UTC")
 
-	hourly_data = {
-		"date": pd.date_range(
-			start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
-			end =  pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
-			freq = pd.Timedelta(seconds = hourly.Interval()),
-			inclusive = "left"
-		)}
+	# Open-Meteo radiation returns a mean value for the preceding hour
+	# Computing the sun position in the middle of that hour
+	sol_pos = location.get_solarposition(wx.index - pd.Timedelta("30 min"))
+	sol_pos.index = wx.index
 
-	hourly_data["shortwave_radiation"] = hourly_shortwave_radiation
+	poa = pvlib.irradiance.get_total_irradiance(
+		surface_tilt=float_converter("TILT"), surface_azimuth=float_converter("AZIMUTH"),
+		solar_zenith=sol_pos["apparent_zenith"], solar_azimuth=sol_pos["azimuth"],
+		dni=wx["dni"], ghi=wx["ghi"], dhi=wx["dhi"],
+		dni_extra=pvlib.irradiance.get_extra_radiation(wx.index),
+		model="haydavies")
 
-	hourly_dataframe = pd.DataFrame(data = hourly_data)
-	logging.info("\nHourly data\n", hourly_dataframe)
+	t_params = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]["open_rack_glass_glass"]
+	t_cell = pvlib.temperature.sapm_cell(poa["poa_global"], wx["temperature_air"],
+										 wx["wind_speed"], **t_params)
 
-	hourly_dataframe.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/pv.csv")
+	dc_kw = pvlib.pvsystem.pvwatts_dc(poa["poa_global"], t_cell, float_converter("PDC0_KW"), float_converter("GAMMA_PDC"))
+	dc_kw *= (1 - float_converter("LOSSES"))
+	ac_kw = pvlib.inverter.pvwatts(dc_kw, float_converter("PDC0_KW")/ float_converter("DC_AC_RATIO")).clip(lower=0)
+
+	result = pd.DataFrame({"poa_wm2": poa["poa_global"], "t_cell":t_cell,
+						 "dc_kw": dc_kw, "ac_kw":ac_kw})
+	result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/pv_gen.csv")
 
 if __name__ == "__main__":
-	start = "2026-10-13"
-	end = "2026-10-27"
-	get_pv_data(start_date=start, end_date=end)
+	start, end = get_dates(offset=CONFIG["ENV"]["DATE_OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"], to_open_meteo=True)
+	meteo_api = fetch_weather(start_date=start, end_date=end)
+	simulate_pv(meteo_api)

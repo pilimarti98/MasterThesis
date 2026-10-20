@@ -19,6 +19,7 @@ requests = "*"
 openmeteo-requests = "*"
 requests-cache = "*"
 retry-requests = "*"
+isodate = "*"
 
 [dev-packages]
 
