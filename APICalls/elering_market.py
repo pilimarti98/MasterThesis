@@ -1,5 +1,6 @@
 import pandas as pd
 
+from APICalls.helper import get_dates
 from APIClient import Server, ApiClient
 from helper import turn_csv_str_into_df
 from config.config import CONFIG
@@ -38,12 +39,13 @@ def get_market_price(start_date: str, end_date:str, path_to_directory: str = Non
         df_price = df_price.rename(columns={'Kuupäev (Eesti aeg)': 'Start Date', 'NPS Eesti': 'Market Price [€/MWh]'})
 
         df_price["Start Date"] = (
-                pd.to_datetime(df_price["Start Date"], utc=True)
+                pd.to_datetime(df_price["Start Date"], utc=True, dayfirst=True)
                 - pd.Timedelta(hours=3)
         ).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        df_price['Market Price'] = df_price['Market Price'].str.replace(",",".", regex=False)
-        df_price['Market Price'] = df_price['Market Price'].astype(float)
+        df_price['Market Price [€/MWh]'] = df_price['Market Price [€/MWh]'].str.replace(",",".", regex=False)
+        df_price['Market Price [€/MWh]'] = df_price['Market Price [€/MWh]'].astype(float)/ 1000.0 # Convert the price to kWh
+        df_price = df_price.rename(columns={'Market Price [€/MWh]':'Market Price [€/kWh]'})
 
         # Send csv to Data directory
         data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
@@ -52,41 +54,6 @@ def get_market_price(start_date: str, end_date:str, path_to_directory: str = Non
     else:
         raise ValueError("No data was returned")
 
-def get_solar_production(start_date:str, end_date:str, path_to_directory: str = None):
-    """ This method gets power system data for selected time period in CSV file """
-
-    path = "/api/system/csv"
-    parameters_solar = {
-        'start': start_date,
-        'end': end_date,
-        'fields': 'solar_energy_production'
-    }
-    solar = call_api(path=path, params=parameters_solar)
-    if solar:
-        # Make necessary modifications to data
-        df_solar = turn_csv_str_into_df(solar)
-        df_solar = df_solar.drop(columns=['Ajatempel (UTC)'])
-        df_solar = df_solar.rename(columns={'Kuupðev (Eesti aeg)': 'Start Date', 'Pðikseseenergia toodang': 'Solar Generation [GWh]'})
-
-        df_solar["Start Date"] = (
-            pd.to_datetime(df_solar["Start Date"], format="%d.%m.%Y %H:%M")
-            .dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-        )
-
-        df_solar['Solar Generation'] = df_solar['Solar Generation'].str.replace(",", ".", regex=False)
-        df_solar['Solar Generation'] = df_solar['Solar Generation'].astype(float)
-
-        # Send csv to Data directory
-        data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
-        df_solar.to_csv(f"{data_path}\\solar_generation_{start_date[:10]}.csv")
-        return df_solar
-    else:
-        raise ValueError("No data was returned")
-
-
 if __name__ == '__main__':
-    start = '2026-10-01T00:00:00.000Z'
-    end = '2026-10-10T00:00:00.000Z'
-
-    get_solar_production(start_date=start, end_date=end)
+    start, end = get_dates(offset=CONFIG["ENV"]["DATE_OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     get_market_price(start_date=start, end_date=end)

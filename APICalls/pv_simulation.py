@@ -1,7 +1,6 @@
 import pandas as pd
 import pvlib.location
 import requests
-from PIL.ImageChops import offset
 
 from helper import float_converter, get_dates
 from config.config import CONFIG

@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
 
+from APICalls.helper import get_dates
 from config.config import CONFIG
 
 
@@ -39,6 +40,5 @@ def convert_to_csv(start_meter:str, end_meter:str):
             return df
 
 if __name__ == "__main__":
-    start = '2026-10-10T00:00:00.000Z'
-    end = '2026-10-20T00:00:00.000Z'
+    start, end = get_dates(offset=CONFIG["ENV"]["DATE_OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     convert_to_csv(start_meter=start, end_meter=end)
