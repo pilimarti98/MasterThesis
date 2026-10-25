@@ -5,6 +5,11 @@ from APIClient import Server, ApiClient
 from helper import turn_csv_str_into_df
 from config.config import CONFIG
 
+"""
+Obtaining Nord Pool market price data for Estonia.
+This data will be used for both the demand fee and the fee for selling surplus energy.
+"""
+
 def call_api(path: str, params: dict):
     """ Helper function to make a request from Baltic Transparency Dashboard"""
     server = Server(
@@ -50,6 +55,7 @@ def get_market_price(start_date: str, end_date:str, path_to_directory: str = Non
         # Send csv to Data directory
         data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
         df_price.to_csv(f"{data_path}\\market_price_{start_date[:10]}.csv")
+        df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/market_price{start_date[:10]}.csv") # Save to RStudio project
         return df_price
     else:
         raise ValueError("No data was returned")

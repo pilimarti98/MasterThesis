@@ -68,7 +68,10 @@ def simulate_pv(wx: pd.DataFrame):
 
 	result = pd.DataFrame({"poa_wm2": poa["poa_global"], "t_cell":t_cell,
 						 "dc_kw": dc_kw, "ac_kw":ac_kw})
+
+	result.index = result.index.strftime("%Y-%m-%dT%H:%MZ")
 	result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/pv_gen.csv")
+	result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/pv_gen.csv") # Save to RStudio project
 
 if __name__ == "__main__":
 	start, end = get_dates(offset=CONFIG["ENV"]["DATE_OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"], to_open_meteo=True)

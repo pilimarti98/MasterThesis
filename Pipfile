@@ -20,6 +20,8 @@ openmeteo-requests = "*"
 requests-cache = "*"
 retry-requests = "*"
 isodate = "*"
+scentree = "*"
+numpy = "*"
 
 [dev-packages]
 

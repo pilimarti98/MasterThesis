@@ -4,7 +4,6 @@ from io import StringIO
 from config.config import CONFIG
 from datetime import datetime, timezone
 import isodate
-import logging
 
 def turn_csv_str_into_df(csv_str: str) -> pd.DataFrame:
     """ Take the csv from an API request and turn into a dataframe to do modifications """
@@ -16,7 +15,7 @@ def float_converter(s:str) -> float:
     """ Helper to turn variables from config file into float for calculations """
     return float(CONFIG["ENV"][s])
 
-def get_dates(offset:str, timedelta:str, to_open_meteo:bool=False):
+def get_dates(offset = None, timedelta = None,start = None, end = None, to_open_meteo:bool=False):
     """
     Function to give back a period of time to request de data for.
     If nothing is given, the last 7 days will be queried.
@@ -36,10 +35,10 @@ def get_dates(offset:str, timedelta:str, to_open_meteo:bool=False):
     elif timedelta == offset:
         raise ValueError("Offset and Timedelta cannot be the same date")
 
-def unify_data(list_of_dfs: list, path: str):
-    """ Get all data from different API calls into a unified dataframe """
+
+def unify_data(list_of_dfs: list, path: str, type_of_data: str):
+    """ Stack different calls from different time ranges into a unified dataframe """
     merged_df = pd.concat(list_of_dfs)
-    # merge all dataframes into one
     return merged_df.to_csv(f"{path}_merged.csv")
 
 def clean_data_dir():

@@ -37,6 +37,7 @@ def convert_to_csv(start_meter:str, end_meter:str):
             df = df.rename(columns={'periodStart': 'Start Date'})
             df = df.drop(columns=['productionKwh'])
             df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/consumption_{start_meter[:10]}.csv")
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/consumption_{start_meter[:10]}.csv") # Save to RStudio project
             return df
 
 if __name__ == "__main__":
