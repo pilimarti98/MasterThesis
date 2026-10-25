@@ -7,20 +7,19 @@ CLIENT_ID = ''
 CLIENT_SECRET = ''
 
 # PV Simulation
-LAT = '59.423982'
-LON = '24.702441'
-ALT = '15'
-TILT = '45' # Tilt of the solar panel
-AZIMUTH = '0' # Facing of the solar panel: 0 - south
-PDC0_KW = '100' # DC nameplate in kW
-DC_AC_RATIO = '1.2' # inverter AC size = PDC0 / ratio
-GAMMA_PDC = '-0.0035' # power temperature coefficient (1/ºC)
-LOSSES = '0.14' # soiling, wiring, mismatch, etc ...
+LAT = ''
+LON = ''
+ALT = ''
+TILT = '' # Tilt of the solar panel
+AZIMUTH = '' # Facing of the solar panel: 0 - south
+PDC0_KW = '' # DC nameplate in kW
+DC_AC_RATIO = '' # inverter AC size = PDC0 / ratio
+GAMMA_PDC = '' # power temperature coefficient (1/ºC)
+LOSSES = '' # soiling, wiring, mismatch, etc ...
 
 # General settings
-START_DATE = ''
+START_DATE = '' # Date format 2026-10-21T00:00:000Z
 END_DATE = ''
-DATE_OFFSET = 'P0D'
-TIMEDELTA = '-P7D'
+DATE_OFFSET = ''
+TIMEDELTA = ''
 PATH_TO_DIR = ''
-
