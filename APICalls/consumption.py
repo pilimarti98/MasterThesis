@@ -34,12 +34,12 @@ def convert_to_csv(start_meter:str, end_meter:str):
             continue
         else:
             df = pd.DataFrame(meter['accountingIntervals'])
-            df = df.rename(columns={'periodStart': 'Start Date'})
+            df = df.rename(columns={'periodStart': 'Timestamp', 'consumptionKwh': 'Consumption [kWh]'})
             df = df.drop(columns=['productionKwh'])
             df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/consumption_{start_meter[:10]}.csv")
             df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/consumption_{start_meter[:10]}.csv") # Save to RStudio project
             return df
 
 if __name__ == "__main__":
-    start, end = get_dates(offset=CONFIG["ENV"]["DATE_OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
+    start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     convert_to_csv(start_meter=start, end_meter=end)

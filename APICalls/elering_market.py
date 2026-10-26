@@ -41,12 +41,18 @@ def get_market_price(start_date: str, end_date:str, path_to_directory: str = Non
         # Make necessary modifications to data
         df_price = turn_csv_str_into_df(price)
         df_price = df_price.drop(columns=['Ajatempel (UTC)'])
-        df_price = df_price.rename(columns={'Kuupäev (Eesti aeg)': 'Start Date', 'NPS Eesti': 'Market Price [€/MWh]'})
+        df_price = df_price.rename(columns={'Kuupäev (Eesti aeg)': 'Timestamp', 'NPS Eesti': 'Market Price [€/MWh]'})
 
-        df_price["Start Date"] = (
-                pd.to_datetime(df_price["Start Date"], utc=True, dayfirst=True)
-                - pd.Timedelta(hours=3)
-        ).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        df_price["Timestamp"] = (pd.to_datetime(df_price["Timestamp"]))
+
+        df_price["Timestamp"] = (
+            df_price.set_index("Timestamp")
+                    .resample('h')
+                    .mean(numeric_only=True)
+                    .reset_index()
+        )
+
+        df_price["Timestamp"] = df_price["Timestamp"].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         df_price['Market Price [€/MWh]'] = df_price['Market Price [€/MWh]'].str.replace(",",".", regex=False)
         df_price['Market Price [€/MWh]'] = df_price['Market Price [€/MWh]'].astype(float)/ 1000.0 # Convert the price to kWh
@@ -61,5 +67,5 @@ def get_market_price(start_date: str, end_date:str, path_to_directory: str = Non
         raise ValueError("No data was returned")
 
 if __name__ == '__main__':
-    start, end = get_dates(offset=CONFIG["ENV"]["DATE_OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
+    start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     get_market_price(start_date=start, end_date=end)

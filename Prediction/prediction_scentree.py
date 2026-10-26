@@ -6,6 +6,17 @@ from scentree.fan_generator import StageManager
 from scentree.tree_construction.ftc import FTC
 from scentree.io.writer import save_json
 
+"""
+###################################### citation ###############################################
+@misc{scentree2026,
+  author = {Cristian Pachón-García and Albert Solà Vilalta and F.-Javier Heredia},
+  title = {{scentree}},
+  subtitle = {a framework for generating scenario trees for multistage stochastic programming},
+  url = {https://github.com/mmobec/scentree},
+  year = {2026}
+}
+"""
+
 np.random.seed(42)
 X_a = np.random.normal(size=(50, 5))
 X_b = np.random.normal(size=(50, 3))

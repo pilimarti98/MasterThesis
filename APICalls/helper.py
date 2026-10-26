@@ -15,7 +15,7 @@ def float_converter(s:str) -> float:
     """ Helper to turn variables from config file into float for calculations """
     return float(CONFIG["ENV"][s])
 
-def get_dates(offset = None, timedelta = None,start = None, end = None, to_open_meteo:bool=False):
+def get_dates(offset = None, timedelta = None, to_open_meteo:bool=False):
     """
     Function to give back a period of time to request de data for.
     If nothing is given, the last 7 days will be queried.

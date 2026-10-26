@@ -5,6 +5,11 @@ import requests
 from helper import float_converter, get_dates
 from config.config import CONFIG
 
+"""
+###################################### citation ###############################################
+Anderson, K., Hansen, C., Holmgren, W., Jensen, A., Mikofski, M., and Driesse, A. “pvlib python: 2023 project update.” Journal of Open Source Software, 8(92), 5994, (2023). DOI: 10.21105/joss.05994.
+"""
+
 hourly_vars = [
 	"shortwave_radiation",
 	"direct_normal_irradiance",
@@ -31,9 +36,10 @@ def fetch_weather(start_date:str, end_date:str):
 	r = requests.get(url, params=params, timeout=300)
 	r.raise_for_status()
 	h = r.json()["hourly"]
+	h["Timestamp"] = h.pop("time")
 
-	df = pd.DataFrame(h).set_index("time")
-	df.index = pd.to_datetime(df.index).tz_localize("EET")
+	df = pd.DataFrame(h).set_index("Timestamp")
+	df.index = pd.to_datetime(df.index)
 	return df.rename(columns={
 		"shortwave_radiation": "ghi",
 		"direct_normal_irradiance": "dni",
@@ -68,12 +74,12 @@ def simulate_pv(wx: pd.DataFrame):
 
 	result = pd.DataFrame({"poa_wm2": poa["poa_global"], "t_cell":t_cell,
 						 "dc_kw": dc_kw, "ac_kw":ac_kw})
-
 	result.index = result.index.strftime("%Y-%m-%dT%H:%MZ")
 	result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/pv_gen.csv")
 	result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/pv_gen.csv") # Save to RStudio project
+	return result
 
 if __name__ == "__main__":
-	start, end = get_dates(offset=CONFIG["ENV"]["DATE_OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"], to_open_meteo=True)
+	start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"], to_open_meteo=True)
 	meteo_api = fetch_weather(start_date=start, end_date=end)
 	simulate_pv(meteo_api)
