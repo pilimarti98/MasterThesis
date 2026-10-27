@@ -1,3 +1,7 @@
+"""
+This script focuses on finding a realistic prediction via Machine Learning algorithm.
+"""
+
 from config.config import CONFIG
 
 import numpy as np

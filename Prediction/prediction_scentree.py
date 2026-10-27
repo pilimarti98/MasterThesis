@@ -1,6 +1,5 @@
 import numpy as np
 from scentree.io import StageColumnsMapping
-
 from scentree.io.loader import Dataset, DatasetsLoader
 from scentree.fan_generator import StageManager
 from scentree.tree_construction.ftc import FTC
