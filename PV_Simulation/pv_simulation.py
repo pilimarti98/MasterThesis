@@ -47,14 +47,13 @@ def simulate_pv(wx: pd.DataFrame, forecast:bool = False):
 
 def get_pv_simulation(start_weather:str, end_weather:str):
     """ Function to get both historical and forecast pv generation values. """
-    forecast_start = datetime.strptime(start_weather, "%Y-%m-%d")
-    forecast_end = forecast_start + timedelta(days=1)
-    forecast_start = datetime.strftime(forecast_start, "%Y-%m-%d")
-    forecast_end = datetime.strftime(forecast_end, "%Y-%m-%d")
+    forecasted_day = datetime.strptime(end_weather, "%Y-%m-%d")
+    forecasted_day = forecasted_day + timedelta(days=1)
+    forecasted_day = datetime.strftime(forecasted_day, "%Y-%m-%d")
 
     # Get the solar data
     historical = historical_weather(start_date=start_weather, end_date=end_weather)
-    forecast = forecast_weather(start_date=forecast_start, end_date=forecast_end)
+    forecast = forecast_weather(start_date=forecasted_day, end_date=forecasted_day)
 
     # Simulate and store results
     simulate_pv(historical)
