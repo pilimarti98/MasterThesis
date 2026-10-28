@@ -1,4 +1,5 @@
 import pandas as pd
+from datetime import datetime, timedelta
 
 from APICalls.helper import get_dates
 from APIClient import Server, ApiClient
@@ -26,7 +27,7 @@ def call_api(path: str, params: dict):
 
     return response
 
-def get_market_price(start_date: str, end_date:str, path_to_directory: str = None):
+def get_market_price(start_date: str, end_date:str, forecast:bool=False):
     """ Request NordPool day-ahead price data in CSV file """
 
     path = "/api/nps/price/csv"
@@ -57,14 +58,36 @@ def get_market_price(start_date: str, end_date:str, path_to_directory: str = Non
         df_price['Market Price [€/MWh]'] = df_price['Market Price [€/MWh]']/ 1000.0 # Convert the price to kWh
         df_price = df_price.rename(columns={'Market Price [€/MWh]':'Market Price [€/kWh]'})
 
-        # Send csv to Data directory
-        data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
-        df_price.to_csv(f"{data_path}\\market_price_{start_date[:10]}.csv")
-        df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/market_price{start_date[:10]}.csv") # Save to RStudio project
-        return df_price
+        if forecast:
+            # Send csv to Data directory
+            data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
+            df_price.to_csv(f"{data_path}\\forecast_market_price.csv")
+            df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/forecast_market_price.csv")  # Save to RStudio project
+            return df_price
+        else:
+            # Send csv to Data directory
+            data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
+            df_price.to_csv(f"{data_path}\\historical_market_price.csv")
+            df_price.to_csv(
+                f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_market_price.csv")  # Save to RStudio project
+            return df_price
     else:
         raise ValueError("No data was returned")
 
+def historical_and_predicted_market_price(start_price:str, end_price:str):
+    """ Function to get both historical and forecast pv generation values. """
+    forecasted_start = datetime.strptime(end_price, "%Y-%m-%dT%H:%MZ")
+    forecasted_start = forecasted_start + timedelta(hours=1)
+    forecasted_end = forecasted_start + timedelta(days=1)
+
+    forecasted_start = datetime.strftime(forecasted_start, "%Y-%m-%dT%H:%MZ")
+    forecasted_end = datetime.strftime(forecasted_end, "%Y-%m-%dT%H:%MZ")
+
+
+    # Request and store results
+    get_market_price(start_date=start_price, end_date=end_price)
+    get_market_price(start_date=forecasted_start, end_date=forecasted_end, forecast=True)
+
 if __name__ == '__main__':
     start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
-    get_market_price(start_date=start, end_date=end)
+    historical_and_predicted_market_price(start_price=start, end_price=end)

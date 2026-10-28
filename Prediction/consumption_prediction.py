@@ -9,10 +9,10 @@ import pandas as pd
 from sklearn.linear_model import Ridge
 
 # 1. Load dataset (e.g., binary or 0-1 scaled digits)
-consumption = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/consumption_2026-05-02.csv")
-consumption["consumptionKwh"] = consumption["consumptionKwh"] /consumption["consumptionKwh"].abs().max()
+consumption = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/historical_consumption.csv")
+consumption["Consumption [kWh]"] = consumption["Consumption [kWh]"] /consumption["Consumption [kWh]"].abs().max()
 
-norm_consumption = consumption["consumptionKwh"]
+norm_consumption = consumption["Consumption [kWh]"]
 values = np.array(norm_consumption, dtype=float)
 
 # AR(1): predict each value from the preceding value

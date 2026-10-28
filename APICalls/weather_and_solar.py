@@ -1,8 +1,7 @@
 import pandas as pd
 import requests
 
-from APICalls.helper import float_converter, get_dates
-from config.config import CONFIG
+from APICalls.helper import float_converter
 
 """
 ###################################### citation ###############################################
