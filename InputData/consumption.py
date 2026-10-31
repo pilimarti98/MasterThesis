@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 
-from APICalls.helper import get_dates
+from InputData.helper import get_dates
 from config.config import CONFIG
 
 
@@ -38,7 +38,7 @@ def convert_to_csv(start_meter:str, end_meter:str):
             df = df.drop(columns=['productionKwh'])
             df["Timestamp"] = (pd.to_datetime(df["Timestamp"]))
             df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/historical_consumption.csv")
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_consumption.csv")
             df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_consumption.csv") # Save to RStudio project
             return df
 

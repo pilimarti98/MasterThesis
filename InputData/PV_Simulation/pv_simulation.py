@@ -6,8 +6,8 @@ import pandas as pd
 import pvlib.location
 from datetime import datetime, timedelta
 
-from APICalls.helper import float_converter, get_dates
-from APICalls.weather_and_solar import historical_weather, forecast_weather
+from InputData.helper import float_converter, get_dates
+from InputData.weather_and_solar import historical_weather, forecast_weather
 from config.config import CONFIG
 
 def simulate_pv(wx: pd.DataFrame, forecast:bool = False):
@@ -38,10 +38,10 @@ def simulate_pv(wx: pd.DataFrame, forecast:bool = False):
                          "dc_kw": dc_kw, "ac_kw":ac_kw})
     result.index = result.index.strftime("%Y-%m-%dT%H:%MZ")
     if forecast:
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/forecast_pv_gen.csv")
+        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/forecast_pv_gen.csv")
         result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/forecast_pv_gen.csv")  # Save to RStudio project
     else:
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/historical_pv_gen.csv")
+        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_pv_gen.csv")
         result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_pv_gen.csv") # Save to RStudio project
     return result
 

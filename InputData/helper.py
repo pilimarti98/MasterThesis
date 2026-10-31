@@ -45,7 +45,7 @@ def clean_data_dir():
     """ delete all data files from the Data directory """
     answer = input("About to delete all files, are you sure? (Y/n): ").strip().lower()
     if answer in ("y", "yes"):
-        folder = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
+        folder = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data'
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:

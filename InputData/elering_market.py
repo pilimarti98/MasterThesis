@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime, timedelta
 
-from APICalls.helper import get_dates
+from InputData.helper import get_dates
 from APIClient import Server, ApiClient
 from helper import turn_csv_str_into_df
 from config.config import CONFIG
@@ -60,14 +60,13 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
 
         if forecast:
             # Send csv to Data directory
-            data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
-            df_price.to_csv(f"{data_path}\\forecast_market_price.csv")
+            df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/forecast_market_price.csv")
             df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/forecast_market_price.csv")  # Save to RStudio project
             return df_price
         else:
             # Send csv to Data directory
-            data_path = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/Data'
-            df_price.to_csv(f"{data_path}\\historical_market_price.csv")
+            df_price.to_csv(
+                f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_market_price.csv")
             df_price.to_csv(
                 f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_market_price.csv")  # Save to RStudio project
             return df_price
