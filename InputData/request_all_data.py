@@ -35,7 +35,7 @@ def align_data_by_timestamp(future:bool = False):
 
     # Modifications for better readability
     merged = merged.drop(columns=['poa_wm2', 't_cell', 'dc_kw'])
-    merged = merged.rename(columns={'ac_kw': 'Generated PV [kWh]'})
+    merged = merged.rename(columns={'Market Price [€/kWh]': 'marketprice','Consumption [kWh]':'consumption', 'ac_kw': 'generatedPV'})
 
     # Save directly into directories for processing further
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/merged.csv", index=False) # For RStudio
