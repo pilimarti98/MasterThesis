@@ -42,6 +42,16 @@ def get_consumption(start_meter:str, end_meter:str):
             df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_consumption.csv") # Save to RStudio project
             return df
 
+def update_consumption(start_meter:str, end_meter:str):
+    df_historical = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_consumption.csv")
+    df_new = get_consumption(start_meter, end_meter)
+    updated_df = pd.concat(objs=[df_historical, df_new], ignore_index=True)
+    updated_df = updated_df.drop(columns='Unnamed: 0')
+    updated_df['Timestamp'] = pd.to_datetime(updated_df['Timestamp'], format="%Y-%m-%dT%H:%MZ").sort_values()
+    updated_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_consumption.csv")
+    updated_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_consumption.csv")  # Save to RStudio project
+
 if __name__ == "__main__":
     start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
-    get_consumption(start_meter=start, end_meter=end)
+    # get_consumption(start_meter=start, end_meter=end)
+    update_consumption(start_meter=start, end_meter=end)

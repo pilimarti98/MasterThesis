@@ -1,7 +1,8 @@
 import logging
 import pandas as pd
-from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from sklearn.metrics import r2_score, mean_absolute_error
 from sklearn.ensemble import GradientBoostingRegressor
+import numpy as np
 
 from InputData.consumption import get_consumption
 from InputData.helper import get_dates
@@ -26,15 +27,15 @@ def split_dataset():
     time_df = load_dataset()
     time_df.index = pd.to_datetime(time_df.index)
 
-    X = time_df.drop(columns=['consumption'])
+    X = time_df.drop(columns=['consumption', 'lag_24'])
     y = time_df['consumption']
 
     # Chronological split: last 7 days as test
     split = time_df.index.max() - pd.Timedelta(days=7)
 
     n_test = (time_df.index > split).sum() # rows in the last 7 days
-    X_train, X_test = X.iloc[:-n_test], X.iloc[n_test:]
-    y_train, y_test = y.iloc[:-n_test], y.iloc[n_test:]
+    X_train, X_test = X.iloc[:-n_test], X.iloc[-n_test:]
+    y_train, y_test = y.iloc[:-n_test], y.iloc[-n_test:]
 
     # Get a dataframe with the next 24 hours timestamps to predict
     last = time_df.index.max()
@@ -42,9 +43,10 @@ def split_dataset():
                                           periods=24, freq='h', tz='UTC')
     timestamps_df = pd.DataFrame(timestamps_index)
     timestamps_df = timestamps_df.set_index([0])
-    future_timestamps = pd.concat(objs=[X, timestamps_df], axis='index')
+    # future_timestamps = pd.concat(objs=[X, timestamps_df], axis='index')
 
-    return X_train, X_test, y_train, y_test, future_timestamps
+    return X_train, X_test, y_train, y_test, timestamps_df
+
 
 def build_model():
     """ Build GradientBoosting predictor """
@@ -54,10 +56,8 @@ def build_model():
 
     # Analyze results
     print("Model MAE: ", mean_absolute_error(y_test, model.predict(X_test)))
-    print("Naive MAE: ", mean_absolute_error(y_test, X_test['lag_24']))
 
     print("Model R squared",r2_score(y_test, model.predict(X_test)))
-    print("Naive R squared",r2_score(y_test, X_test['lag_24']))
 
     if r2_score(y_test, model.predict(X_test)) < 0.3:
         logging.warning("R squared score is low")
