@@ -8,11 +8,9 @@ from InputData.consumption import convert_to_csv
 from config.config import CONFIG
 
 """
-
 Get all data unified into one dataframe for EDA in RStudio, 
 in order to find relations between datasets.
 These datasets will be linked by the timestamp, in UTC.
-
 """
 
 def align_data_by_timestamp(future:bool = False):
@@ -38,6 +36,7 @@ def align_data_by_timestamp(future:bool = False):
     merged = merged.rename(columns={'Market Price [€/kWh]': 'marketprice','Consumption [kWh]':'consumption', 'ac_kw': 'generatedPV'})
 
     # Save directly into directories for processing further
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/merged.csv", index=False)  # For Predictions
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/merged.csv", index=False) # For RStudio
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/AMPL_Thesis/merged.csv", index=False) # For AMPL
 

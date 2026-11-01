@@ -25,7 +25,7 @@ def get_metering_data(data_token, start_data, end_data, resolution="one_hour", e
     r.raise_for_status()
     return r.json()
 
-def convert_to_csv(start_meter:str, end_meter:str):
+def get_consumption(start_meter:str, end_meter:str):
     token = get_token()
     data = get_metering_data(token, start_meter, end_meter)
     for meter in data:
@@ -34,7 +34,7 @@ def convert_to_csv(start_meter:str, end_meter:str):
             continue
         else:
             df = pd.DataFrame(meter['accountingIntervals'])
-            df = df.rename(columns={'periodStart': 'Timestamp', 'consumptionKwh': 'Consumption [kWh]'})
+            df = df.rename(columns={'periodStart': 'Timestamp', 'consumptionKwh': 'consumption'})
             df = df.drop(columns=['productionKwh'])
             df["Timestamp"] = (pd.to_datetime(df["Timestamp"]))
             df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
@@ -44,4 +44,4 @@ def convert_to_csv(start_meter:str, end_meter:str):
 
 if __name__ == "__main__":
     start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
-    convert_to_csv(start_meter=start, end_meter=end)
+    get_consumption(start_meter=start, end_meter=end)
