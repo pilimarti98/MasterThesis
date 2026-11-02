@@ -75,7 +75,7 @@ def build_gradient_boosting_model():
     # Get predictions
     predict_response = model.predict(predict_dataset)
     predict_dataset['consumption'] = predict_response
-    return predict_dataset
+    return predict_dataset, mean_absolute_error(y_test, model.predict(X_test))
 
 def build_mlp_regressor_model():
     """ Build Multi-Layer Perceptron Regressor """
@@ -93,8 +93,22 @@ def build_mlp_regressor_model():
     # Get predictions
     predict_response = model.predict(predict_dataset)
     predict_dataset['consumption'] = predict_response
-    return predict_dataset
+    return predict_dataset, mean_absolute_error(y_test, model.predict(X_test))
+
+def return_best_predictor():
+    """
+    Since we had two methods, the one with the smallest MAE will be selected for the model
+    """
+    mlp, mlp_mae = build_mlp_regressor_model()
+    gradboost, gradboost_mae = build_gradient_boosting_model()
+
+    # Set timestamps back to ISO format
+    mlp.index = mlp.index.strftime("%Y-%m-%dT%H:%MZ")
+    gradboost.index = gradboost.index.strftime("%Y-%m-%dT%H:%MZ")
+    if mlp_mae > gradboost_mae:
+        return gradboost
+    else:
+        return mlp
 
 if __name__ == '__main__':
-    build_gradient_boosting_model()
-    build_mlp_regressor_model()
+    return_best_predictor()

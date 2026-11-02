@@ -73,8 +73,9 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
     else:
         raise ValueError("No data was returned")
 
-def historical_and_predicted_market_price(start_price:str, end_price:str):
+def historical_and_predicted_market_price():
     """ Function to get both historical and forecast pv generation values. """
+    start_price, end_price = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     forecasted_start = datetime.strptime(end_price, "%Y-%m-%dT%H:%MZ")
     forecasted_start = forecasted_start + timedelta(hours=1)
     forecasted_end = forecasted_start + timedelta(days=1)
@@ -82,11 +83,10 @@ def historical_and_predicted_market_price(start_price:str, end_price:str):
     forecasted_start = datetime.strftime(forecasted_start, "%Y-%m-%dT%H:%MZ")
     forecasted_end = datetime.strftime(forecasted_end, "%Y-%m-%dT%H:%MZ")
 
-
     # Request and store results
-    get_market_price(start_date=start_price, end_date=end_price)
-    get_market_price(start_date=forecasted_start, end_date=forecasted_end, forecast=True)
+    historical = get_market_price(start_date=start_price, end_date=end_price)
+    prediction = get_market_price(start_date=forecasted_start, end_date=forecasted_end, forecast=True)
+    return historical, prediction
 
 if __name__ == '__main__':
-    start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
-    historical_and_predicted_market_price(start_price=start, end_price=end)
+    historical_and_predicted_market_price()

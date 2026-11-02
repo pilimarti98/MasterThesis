@@ -18,7 +18,6 @@ def float_converter(s:str) -> float:
 def get_dates(offset = None, timedelta = None, to_open_meteo:bool=False):
     """
     Function to give back a period of time to request de data for.
-    If nothing is given, the last 7 days will be queried.
     """
     now = datetime.now(timezone.utc)
     now = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -34,12 +33,6 @@ def get_dates(offset = None, timedelta = None, to_open_meteo:bool=False):
         return offset, timedelta
     elif timedelta == offset:
         raise ValueError("Offset and Timedelta cannot be the same date")
-
-
-def unify_data(list_of_dfs: list, path: str, type_of_data: str):
-    """ Stack different calls from different time ranges into a unified dataframe """
-    merged_df = pd.concat(list_of_dfs)
-    return merged_df.to_csv(f"{path}_merged.csv")
 
 def clean_data_dir():
     """ delete all data files from the Data directory """

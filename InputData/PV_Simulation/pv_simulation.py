@@ -45,8 +45,10 @@ def simulate_pv(wx: pd.DataFrame, forecast:bool = False):
         result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_pv_gen.csv") # Save to RStudio project
     return result
 
-def get_pv_simulation(start_weather:str, end_weather:str):
+def get_pv_simulation():
     """ Function to get both historical and forecast pv generation values. """
+
+    start_weather, end_weather = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"], to_open_meteo=True)
     forecasted_day = datetime.strptime(end_weather, "%Y-%m-%d")
     forecasted_day = forecasted_day + timedelta(days=1)
     forecasted_day = datetime.strftime(forecasted_day, "%Y-%m-%d")
@@ -56,9 +58,9 @@ def get_pv_simulation(start_weather:str, end_weather:str):
     forecast = forecast_weather(start_date=forecasted_day, end_date=forecasted_day)
 
     # Simulate and store results
-    simulate_pv(historical)
-    simulate_pv(forecast, forecast=True)
+    historical_results = simulate_pv(historical)
+    forecast_results = simulate_pv(forecast, forecast=True)
+    return historical_results, forecast_results
 
 if __name__ == '__main__':
-    start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"], to_open_meteo=True)
-    get_pv_simulation(start_weather=start, end_weather=end)
+    get_pv_simulation()
