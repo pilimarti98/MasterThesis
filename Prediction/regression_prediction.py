@@ -1,6 +1,8 @@
-import logging
 import pandas as pd
-from sklearn.metrics import r2_score, mean_absolute_error
+import numpy as np
+from requests import HTTPError
+
+from sklearn.metrics import mean_absolute_error
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.neural_network import MLPRegressor
 
@@ -11,7 +13,12 @@ from config.config import CONFIG
 def load_dataset():
     """ Load Historical Consumption Data for a month """
     start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
-    df = get_consumption(start_meter=start, end_meter=end)
+    try:
+        df = get_consumption(start_meter=start, end_meter=end)
+    except HTTPError:
+        # In case the API call falls, relay on the database
+        df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_consumption.csv")
+        df = df.drop(columns=['Unnamed: 0'])
     df.index = pd.to_datetime(df['Timestamp'])
     df = df.set_index('Timestamp').sort_index()
     return df
@@ -24,6 +31,8 @@ def split_dataset():
         df_feat['hour'] = df_feat.index.hour
         df_feat['dow'] = df_feat.index.dayofweek
         df_feat['weekend'] = (df_feat['dow'] >= 5).astype(int)
+        if 'consumption' not in df_feat.columns:
+            df_feat['consumption'] = np.nan
         df_feat['lag24'] = df_feat['consumption'].shift(24) # Value from previous day
         df_feat['lag48'] = df_feat['consumption'].shift(48) # Value from two days ago
         return df_feat
@@ -41,27 +50,36 @@ def split_dataset():
     X = get_timestamp_features(df_feat=df)
     X = X.dropna()
     y = X['consumption']
+    X = X.drop(columns='consumption')
     X_train, X_test = X.iloc[:-n_test], X.iloc[-n_test:]
     y_train, y_test = y.iloc[:-n_test], y.iloc[-n_test:]
 
-    return X_train, X_test, y_train, y_test
+    # Get dataset with timestamp of consumption values to predict
+    day_ahead = last - pd.Timedelta(days=1)
+    n_test = (df.index > day_ahead).sum()  # rows in the last day
+    future_idx = pd.date_range(df.index[-1] + pd.Timedelta(hours=1), periods=24, freq='h')
+    full = pd.concat([df, pd.DataFrame(index=future_idx)])
+    predict = get_timestamp_features(df_feat=full).iloc[-n_test:]
+    predict = predict.drop(columns='consumption')
+    return X_train, X_test, y_train, y_test, predict
 
 def build_gradient_boosting_model():
     """ Build GradientBoosting predictor """
-    X_train, X_test, y_train, y_test = split_dataset()
-    model = GradientBoostingRegressor(random_state=42)
+    X_train, X_test, y_train, y_test, predict_dataset = split_dataset()
+    model = GradientBoostingRegressor(n_estimators=200, max_depth=3, learning_rate=0.05, subsample=0.8, random_state=42)
     model.fit(X_train, y_train)
 
     # Analyze results
     print("Model MAE: ", mean_absolute_error(y_test, model.predict(X_test)))
-    print("Model R squared",r2_score(y_test, model.predict(X_test)))
 
-    if r2_score(y_test, model.predict(X_test)) < 0.3:
-        logging.warning("R squared score is low")
+    # Get predictions
+    predict_response = model.predict(predict_dataset)
+    predict_dataset['consumption'] = predict_response
+    return predict_dataset
 
 def build_mlp_regressor_model():
     """ Build Multi-Layer Perceptron Regressor """
-    X_train, X_test, y_train, y_test = split_dataset()
+    X_train, X_test, y_train, y_test, predict_dataset = split_dataset()
     model = MLPRegressor(hidden_layer_sizes=(32,16),
                          alpha=1e-3,
                          early_stopping=True,
@@ -71,10 +89,11 @@ def build_mlp_regressor_model():
 
     # Analyze results
     print("Model MAE: ", mean_absolute_error(y_test, model.predict(X_test)))
-    print("Model R squared", r2_score(y_test, model.predict(X_test)))
 
-    if r2_score(y_test, model.predict(X_test)) < 0.3:
-        logging.warning("R squared score is low")
+    # Get predictions
+    predict_response = model.predict(predict_dataset)
+    predict_dataset['consumption'] = predict_response
+    return predict_dataset
 
 if __name__ == '__main__':
     build_gradient_boosting_model()
