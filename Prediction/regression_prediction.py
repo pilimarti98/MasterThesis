@@ -56,7 +56,7 @@ def split_dataset():
     # Get dataset with timestamp of consumption values to predict
     day_ahead = last - pd.Timedelta(days=1)
     n_test = (df.index > day_ahead).sum()  # rows in the last day
-    future_idx = pd.date_range(df.index[-1] + pd.Timedelta(hours=1), periods=24, freq='h')
+    future_idx = pd.date_range(df.index[-1] + pd.Timedelta(days=1, hours=1), periods=24, freq='h')
     full = pd.concat([df, pd.DataFrame(index=future_idx)])
     predict = get_timestamp_features(df_feat=full).iloc[-n_test:]
     predict = predict.drop(columns='consumption')

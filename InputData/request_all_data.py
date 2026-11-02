@@ -44,11 +44,11 @@ def align_data_by_timestamp(future:bool = False):
 
 def align_future_data():
     """ Function to get forecasted aligned data. """
-    # consumption = return_best_predictor()
+    consumption = return_best_predictor()
     pv_gen = get_pv_simulation()[1]
     market_price = historical_and_predicted_market_price()[1]
     market_price = market_price.set_index('Timestamp')
-    dataframes = [pv_gen, market_price]
+    dataframes = [pv_gen, market_price, consumption]
     merged = pd.concat(
         dataframes,
         axis=1,
