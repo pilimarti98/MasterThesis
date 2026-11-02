@@ -1,9 +1,8 @@
 import pandas as pd
 
-from InputData.helper import get_dates
-from InputData.PV_Simulation.pv_simulation import get_pv_simulation
-from InputData.elering_market import historical_and_predicted_market_price
-from InputData.consumption import get_consumption
+from InputData.DataRequests.pv_simulation import get_pv_simulation
+from InputData.DataRequests.elering_market import historical_and_predicted_market_price
+from InputData.DataRequests.consumption import get_consumption
 from Prediction.regression_prediction import return_best_predictor
 from config.config import CONFIG
 

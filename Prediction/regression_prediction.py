@@ -6,8 +6,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.neural_network import MLPRegressor
 
-from InputData.helper import get_day_ahead
-from InputData.consumption import get_consumption
+from InputData.DataRequests.consumption import get_consumption
 from config.config import CONFIG
 
 def load_dataset():

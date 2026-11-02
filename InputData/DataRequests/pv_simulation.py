@@ -5,8 +5,8 @@ Open Meteo forecast values + PVLib simulation based on the forecasted values
 import pandas as pd
 import pvlib.location
 
-from InputData.helper import float_converter, get_dates, get_day_ahead
-from InputData.weather_and_solar import historical_weather, forecast_weather
+from InputData.helper.data_helper import float_converter, get_dates, get_day_ahead
+from InputData.DataRequests.weather_and_solar import historical_weather, forecast_weather
 from config.config import CONFIG
 
 def simulate_pv(wx: pd.DataFrame, forecast:bool = False):

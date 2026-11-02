@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 
-from InputData.helper import get_dates
+from InputData.helper.data_helper import get_dates
 from config.config import CONFIG
 
 

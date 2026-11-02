@@ -2,10 +2,7 @@ from dataclasses import dataclass, field
 from json import JSONDecodeError
 from typing import Any, Dict, Optional
 import logging
-
-
 import requests
-
 
 @dataclass
 class Server:
