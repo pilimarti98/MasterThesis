@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 
-from APICalls.helper import get_dates
+from InputData.helper.data_helper import get_dates
 from config.config import CONFIG
 
 
@@ -15,6 +15,7 @@ def get_token() -> str:
     return r.json()['access_token']
 
 def get_metering_data(data_token, start_data, end_data, resolution="one_hour", eics=None):
+    """ Make a request to get consumption data from Elering for a specific meter, in kWh """
     # Limits: max 31 dats and 10 EICs per request, ~1 request/ 5s
     params = {"startDateTime":start_data, "endDateTime": end_data, "resolution": resolution}
     if eics:
@@ -25,21 +26,25 @@ def get_metering_data(data_token, start_data, end_data, resolution="one_hour", e
     r.raise_for_status()
     return r.json()
 
-def convert_to_csv(start_meter:str, end_meter:str):
+def get_consumption():
+    """ Get consumption data, limited to 30 days """
     token = get_token()
-    data = get_metering_data(token, start_meter, end_meter)
+    start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
+    data = get_metering_data(token, start, end)
     for meter in data:
         if meter.get("error"):
             print(meter["meteringPointEic"], "ERROR:", meter["error"]["message"])
             continue
         else:
             df = pd.DataFrame(meter['accountingIntervals'])
-            df = df.rename(columns={'periodStart': 'Start Date'})
+            df = df.rename(columns={'periodStart': 'Timestamp', 'consumptionKwh': 'consumption'})
             df = df.drop(columns=['productionKwh'])
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Data/consumption_{start_meter[:10]}.csv")
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/consumption_{start_meter[:10]}.csv") # Save to RStudio project
+            df = df.dropna()
+            df["Timestamp"] = (pd.to_datetime(df["Timestamp"]))
+            df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_consumption.csv")
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_consumption.csv") # Save to RStudio project
             return df
 
 if __name__ == "__main__":
-    start, end = get_dates(offset=CONFIG["ENV"]["DATE_OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
-    convert_to_csv(start_meter=start, end_meter=end)
+    get_consumption()
