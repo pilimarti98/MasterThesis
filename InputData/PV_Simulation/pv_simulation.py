@@ -4,9 +4,8 @@ Open Meteo forecast values + PVLib simulation based on the forecasted values
 """
 import pandas as pd
 import pvlib.location
-from datetime import datetime, timedelta
 
-from InputData.helper import float_converter, get_dates
+from InputData.helper import float_converter, get_dates, get_day_ahead
 from InputData.weather_and_solar import historical_weather, forecast_weather
 from config.config import CONFIG
 
@@ -47,11 +46,8 @@ def simulate_pv(wx: pd.DataFrame, forecast:bool = False):
 
 def get_pv_simulation():
     """ Function to get both historical and forecast pv generation values. """
-
     start_weather, end_weather = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"], to_open_meteo=True)
-    forecasted_day = datetime.strptime(end_weather, "%Y-%m-%d")
-    forecasted_day = forecasted_day + timedelta(days=1)
-    forecasted_day = datetime.strftime(forecasted_day, "%Y-%m-%d")
+    forecasted_day = get_day_ahead(to_open_meteo=True)
 
     # Get the solar data
     historical = historical_weather(start_date=start_weather, end_date=end_weather)

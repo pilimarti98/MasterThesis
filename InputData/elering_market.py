@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime, timedelta
 
-from InputData.helper import get_dates
+from InputData.helper import get_dates, get_day_ahead
 from APIClient import Server, ApiClient
 from helper import turn_csv_str_into_df
 from config.config import CONFIG
@@ -76,16 +76,11 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
 def historical_and_predicted_market_price():
     """ Function to get both historical and forecast pv generation values. """
     start_price, end_price = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
-    forecasted_start = datetime.strptime(end_price, "%Y-%m-%dT%H:%MZ")
-    forecasted_start = forecasted_start + timedelta(hours=1)
-    forecasted_end = forecasted_start + timedelta(days=1)
-
-    forecasted_start = datetime.strftime(forecasted_start, "%Y-%m-%dT%H:%MZ")
-    forecasted_end = datetime.strftime(forecasted_end, "%Y-%m-%dT%H:%MZ")
+    day_ahead_start, day_ahead_end = get_day_ahead()
 
     # Request and store results
     historical = get_market_price(start_date=start_price, end_date=end_price)
-    prediction = get_market_price(start_date=forecasted_start, end_date=forecasted_end, forecast=True)
+    prediction = get_market_price(start_date=day_ahead_start, end_date=day_ahead_end, forecast=True)
     return historical, prediction
 
 if __name__ == '__main__':

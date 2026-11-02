@@ -15,12 +15,15 @@ These datasets will be linked by the timestamp, in UTC.
 
 def align_data_by_timestamp(future:bool = False):
     """ Get all data unified by UTC timestamps """
+    # Get historical solar generation
     pv_df = get_pv_simulation()[0]
     pv_df = pv_df.reset_index()
 
-    start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
+    # Get historical market prices
     price_df = historical_and_predicted_market_price()[0]
-    consumption_df = get_consumption(start_meter=start, end_meter=end)
+
+    # Get historical consumption values
+    consumption_df = get_consumption()
 
     dataframes = [price_df, consumption_df, pv_df]
     merged = pd.concat(
@@ -36,19 +39,25 @@ def align_data_by_timestamp(future:bool = False):
     # Save directly into directories for processing further
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/merged.csv", index=False)  # For Predictions
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/merged.csv", index=False) # For RStudio
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/AMPL_Thesis/merged.csv", index=False) # For AMPL
+    return merged
 
 
 def align_future_data():
     """ Function to get forecasted aligned data. """
-    consumption = return_best_predictor()
+    # consumption = return_best_predictor()
     pv_gen = get_pv_simulation()[1]
     market_price = historical_and_predicted_market_price()[1]
-    dataframes = [pv_gen, consumption, market_price]
+    market_price = market_price.set_index('Timestamp')
+    dataframes = [pv_gen, market_price]
     merged = pd.concat(
         dataframes,
         axis=1,
-        join='inner')
+        join='inner'
+    )
+
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/day_ahead_merged.csv", index=False)  # For Predictions
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/day_ahead_merged.csv", index=False)  # For RStudio
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/AMPL_Thesis/day_ahead_merged.csv", index=False)  # For AMPL
     return merged
 
 if __name__ == "__main__":

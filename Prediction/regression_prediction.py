@@ -6,15 +6,14 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.neural_network import MLPRegressor
 
+from InputData.helper import get_day_ahead
 from InputData.consumption import get_consumption
-from InputData.helper import get_dates
 from config.config import CONFIG
 
 def load_dataset():
     """ Load Historical Consumption Data for a month """
-    start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     try:
-        df = get_consumption(start_meter=start, end_meter=end)
+        df = get_consumption()
     except HTTPError:
         # In case the API call falls, relay on the database
         df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_consumption.csv")
