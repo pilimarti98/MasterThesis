@@ -15,6 +15,7 @@ def get_token() -> str:
     return r.json()['access_token']
 
 def get_metering_data(data_token, start_data, end_data, resolution="one_hour", eics=None):
+    """ Make a request to get consumption data from Elering for a specific meter, in kWh """
     # Limits: max 31 dats and 10 EICs per request, ~1 request/ 5s
     params = {"startDateTime":start_data, "endDateTime": end_data, "resolution": resolution}
     if eics:
@@ -26,6 +27,7 @@ def get_metering_data(data_token, start_data, end_data, resolution="one_hour", e
     return r.json()
 
 def get_consumption(start_meter:str, end_meter:str):
+    """ Get consumption data, limited to 30 days """
     token = get_token()
     data = get_metering_data(token, start_meter, end_meter)
     for meter in data:
@@ -36,6 +38,7 @@ def get_consumption(start_meter:str, end_meter:str):
             df = pd.DataFrame(meter['accountingIntervals'])
             df = df.rename(columns={'periodStart': 'Timestamp', 'consumptionKwh': 'consumption'})
             df = df.drop(columns=['productionKwh'])
+            df = df.dropna()
             df["Timestamp"] = (pd.to_datetime(df["Timestamp"]))
             df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
             df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_consumption.csv")
@@ -43,6 +46,7 @@ def get_consumption(start_meter:str, end_meter:str):
             return df
 
 def update_consumption(start_meter:str, end_meter:str):
+    """ Function to add new timestamps to the historical consumption file """
     df_historical = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_consumption.csv")
     df_new = get_consumption(start_meter, end_meter)
     updated_df = pd.concat(objs=[df_historical, df_new], ignore_index=True)
@@ -53,5 +57,5 @@ def update_consumption(start_meter:str, end_meter:str):
 
 if __name__ == "__main__":
     start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
-    # get_consumption(start_meter=start, end_meter=end)
-    update_consumption(start_meter=start, end_meter=end)
+    get_consumption(start_meter=start, end_meter=end)
+    # update_consumption(start_meter=start, end_meter=end)
