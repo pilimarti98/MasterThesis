@@ -18,8 +18,6 @@ GAMMA_PDC = '' # power temperature coefficient (1/ºC)
 LOSSES = '' # soiling, wiring, mismatch, etc ...
 
 # General settings
-START_DATE = '' # Date format 2026-10-21T00:00:000Z
-END_DATE = ''
-DATE_OFFSET = ''
-TIMEDELTA = ''
+OFFSET = '' # Where to begin the time range to request data
+TIMEDELTA = '' # Where to finalize the time range to request data, NB! As it is historical, it goes to past days
 PATH_TO_DIR = ''
