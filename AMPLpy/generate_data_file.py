@@ -13,10 +13,10 @@ def create_data_for_ampl():
         f.write(f'param Timestamp := {len(df)};\n') # Set hour int values from df length
         f.write(f'param agg_rate := {CONFIG["ENV"]["AGG_RATE"]};\nparam dem_rate := {CONFIG["ENV"]["DEMAND_RATE"]};\n') # Initialize rate params
         f.write(f'param store0 := {CONFIG["ENV"]["INITIAL_STORING"]};\nparam battery_capacity := {CONFIG["ENV"]["BATTERY_CAPACITY"]};\n') # Initialize storing params
-        f.write(f'param: solar_gen demand market_price :=\n') # Initialize parameters for day ahead dataframe
+        f.write(f'param: pv_gen demand market_price :=\n') # Initialize parameters for day ahead dataframe
         for _,r in df.iterrows():
             # Write values from day ahead dataframe for solar generation, demand and market price
-            f.write(f'{int(r['hour'])} {r['pv_gen']} {r['consumption']} {r['market_price']}\n')
+            f.write(f'{int(r['hour'])} {r['pv_gen']} {r['demand']} {r['market_price']}\n')
         f.write(';\n')
 
 if __name__ == '__main__':

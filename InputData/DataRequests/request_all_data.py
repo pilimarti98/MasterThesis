@@ -56,7 +56,7 @@ def align_future_data():
     # Cleanup of merged dataframe
     merged['timestamp'] = merged.index
     merged = merged.drop(columns=['poa_wm2', 't_cell', 'dc_kw', 'dow', 'weekend', 'lag24', 'lag48'])
-    merged = merged.rename(columns={'ac_kw': 'pv_gen', 'Market Price [€/kWh]': 'market_price'})
+    merged = merged.rename(columns={'ac_kw': 'pv_gen', 'Market Price [€/kWh]': 'market_price', 'consumption': 'demand'})
 
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/day_ahead_merged.csv", index=False)  # For RStudio
     return merged

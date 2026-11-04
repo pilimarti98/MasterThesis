@@ -4,7 +4,6 @@ import requests
 from InputData.helper.data_helper import get_dates
 from config.config import CONFIG
 
-
 def get_token() -> str:
     r = requests.post(CONFIG["ENV"]["TOKEN_URL"], data={
         "grant_type": "client_credentials",
