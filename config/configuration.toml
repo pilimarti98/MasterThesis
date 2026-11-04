@@ -17,6 +17,12 @@ DC_AC_RATIO = '' # inverter AC size = PDC0 / ratio
 GAMMA_PDC = '' # power temperature coefficient (1/ºC)
 LOSSES = '' # soiling, wiring, mismatch, etc ...
 
+# AMPL Optimization model parameter settings
+AGG_RATE = ''
+DEMAND_RATE = ''
+INITIAL_STORING = ''
+BATTERY_CAPACITY = ''
+
 # General settings
 OFFSET = '' # Where to begin the time range to request data
 TIMEDELTA = '' # Where to finalize the time range to request data, NB! As it is historical, it goes to past days
