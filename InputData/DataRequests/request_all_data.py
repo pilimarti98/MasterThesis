@@ -53,10 +53,12 @@ def align_future_data():
         axis=1,
         join='inner'
     )
+    # Cleanup of merged dataframe
+    merged['timestamp'] = merged.index
+    merged = merged.drop(columns=['poa_wm2', 't_cell', 'dc_kw', 'dow', 'weekend', 'lag24', 'lag48'])
+    merged = merged.rename(columns={'ac_kw': 'pv_gen', 'Market Price [€/kWh]': 'market_price'})
 
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/day_ahead_merged.csv", index=False)  # For Predictions
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/day_ahead_merged.csv", index=False)  # For RStudio
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/AMPL_Thesis/day_ahead_merged.csv", index=False)  # For AMPL
     return merged
 
 if __name__ == "__main__":

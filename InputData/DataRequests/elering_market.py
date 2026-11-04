@@ -54,7 +54,7 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
         )
 
         df_price["Timestamp"] = df_price["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
-        df_price['Market Price [€/MWh]'] = df_price['Market Price [€/MWh]']/ 1000.0 # Convert the price to kWh
+        df_price['Market Price [€/MWh]'] = df_price['Market Price [€/MWh]']/ 1000.0 # Convert the price variable to €/kWh
         df_price = df_price.rename(columns={'Market Price [€/MWh]':'Market Price [€/kWh]'})
 
         if forecast:
