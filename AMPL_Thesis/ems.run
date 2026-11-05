@@ -1,0 +1,7 @@
+reset;
+#model steelMPTP.mod;
+model ems.mod;
+data ems.dat;
+option solver minos; solve;
+
+display {t in 1..Timestamp}(pv_gen[t], Store[t-1], Buy[t], Sell[t], Store[t]);
