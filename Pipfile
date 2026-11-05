@@ -20,8 +20,8 @@ openmeteo-requests = "*"
 requests-cache = "*"
 retry-requests = "*"
 isodate = "*"
-scentree = "*"
 numpy = "*"
+scentree = "==0.0.8"
 
 [dev-packages]
 

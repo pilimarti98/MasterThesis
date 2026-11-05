@@ -1,9 +1,8 @@
-from InputData.DataRequests.request_all_data import align_data_by_timestamp
-from scentree.io import StageColumnsMapping
+import pandas as pd
+
 from scentree.io.loader import Dataset, DatasetsLoader
 from scentree.fan_generator import StageManager
 from scentree.tree_construction.ftc import FTC
-from scentree.io.writer import save_json
 
 """
 ###################################### citation ###############################################
@@ -16,49 +15,44 @@ from scentree.io.writer import save_json
 }
 """
 
-df = align_data_by_timestamp()
+df = pd.read_csv(r"C:\Users\pilim\Documents\PythonProjects\MasterThesis\InputData\Data\merged.csv", parse_dates=["Timestamp"], index_col="Timestamp")
+df = df.tz_convert("UTC") if df.index.tz else df     # avoids 23/25-hour DST days
 
-# Datasets from merged data, where demand and pv generation are the specific datasets to get predictions from
+df["date"], df["hour"] = df.index.date, df.index.hour
+
+def to_daily(col):
+    m = df.pivot(index="date", columns="hour", values=col)
+    return m.dropna()            # drop incomplete days
+
+price = to_daily('marketprice')
+demand = to_daily('demand')
+solar = to_daily('generatedPV')
+common = demand.index.intersection(price.index).intersection(solar.index)
+demand, price, solar = (x.loc[common].to_numpy() for x in (demand, price, solar))
+
+# Stages are your modelling choice. Example: price is stage 1 (day-ahead
+# bid), consumption and solar are stage 2.
 datasets = [
-    Dataset(
-        name='demand',
-        values=df['demand'],
-        stage_ids=len(df),
-    ),
-    Dataset(
-        name='pv_gen',
-        values=df['pv_gen'],
-        stage_ids=len(df),
-    )
+    Dataset(name="price",       values=price, stage_ids=24*[1]),
+    Dataset(name="consumption", values=demand,  stage_ids=24*[2]),
+    Dataset(name="solar_ac",    values=solar, stage_ids=24*[2]),
 ]
-dataset_loader = DatasetsLoader(datasets=datasets)
-full_values = dataset_loader.get_full_values()
-num_variables_per_stage = dataset_loader.get_num_variables_per_stage()
-stage_ids = dataset_loader.get_sorted_stage_ids()
-map_columns_names = dataset_loader.create_dataset_column_mapping()
+dsl = DatasetsLoader(datasets=datasets)
+X            = dsl.get_full_values()
+num_vars     = dsl.get_num_variables_per_stage()
+stage_ids    = dsl.get_sorted_stage_ids()
+col_map      = dsl.create_stages_columns_mapping()
 
-num_fans = 4
-num_scenarios = 10
-stage_manager = StageManager()
-scenario_fans = stage_manager.generate_scenario_fans(
-    X=full_values,
-    num_fans=num_fans,
-    num_scenarios=num_scenarios,
+fans = StageManager().generate_scenario_fans(
+    X=X,
+    num_fans=1,                  # 1 = a single day
+    num_scenarios=50,
+    build_in_sample_fans=False,  # False = forecast the NEXT day; True = backtest on the last day(s)
+    seed=123,
 )
 
-tree_builder = FTC(
-    scenarios=scenario_fans["scenarios"],
-    num_variables_per_stage=num_variables_per_stage,
-    stage_ids=stage_ids
-)
-scenario_trees = tree_builder.generate_scenario_trees(initial_stage_id_to_cluster=1, stage_columns_mapping='')
-
-save_json(
-    output_dir=".",
-    num_stages=len(stage_ids),
-    predicted_value=scenario_fans["predicted_values"],
-    observed_value=scenario_fans["observed_values"],
-    scenario_trees=scenario_trees,
-    mapping_datasets_columns=map_columns_names,
-    multiple_files=True,
-)
+trees = FTC(
+    scenarios=fans["scenarios"],
+    num_variables_per_stage=num_vars,
+    stage_ids=stage_ids,
+).generate_scenario_trees(initial_stage_id_to_cluster=1)

@@ -36,7 +36,7 @@ def get_demand():
             continue
         else:
             df = pd.DataFrame(meter['accountingIntervals'])
-            df = df.rename(columns={'periodStart': 'Timestamp', 'demandKwh': 'demand'})
+            df = df.rename(columns={'periodStart': 'Timestamp', 'consumptionKwh': 'demand'})
             df = df.drop(columns=['productionKwh'])
             df = df.dropna()
             df["Timestamp"] = (pd.to_datetime(df["Timestamp"]))
