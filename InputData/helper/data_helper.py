@@ -15,7 +15,7 @@ def float_converter(s:str) -> float:
     """ Helper to turn variables from config file into float for calculations """
     return float(CONFIG["ENV"][s])
 
-def get_dates(offset = None, timedelta = None, to_open_meteo:bool=False, to_market:bool=False, to_consumption:bool=False):
+def get_dates(offset = None, timedelta = None, to_open_meteo:bool=False, to_market:bool=False):
     """
     Function to give back a period of time to request de data for.
     This function returns the data range from OFFSET at Start of the Day (00:00h) to TIMEDELTA at EOD (End Of Day)

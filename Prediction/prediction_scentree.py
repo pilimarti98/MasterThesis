@@ -1,4 +1,4 @@
-import numpy as np
+from InputData.DataRequests.request_all_data import align_data_by_timestamp
 from scentree.io import StageColumnsMapping
 from scentree.io.loader import Dataset, DatasetsLoader
 from scentree.fan_generator import StageManager
@@ -16,21 +16,19 @@ from scentree.io.writer import save_json
 }
 """
 
-np.random.seed(42)
-X_a = np.random.normal(size=(50, 5))
-X_b = np.random.normal(size=(50, 3))
+df = align_data_by_timestamp()
 
-
+# Datasets from merged data, where demand and pv generation are the specific datasets to get predictions from
 datasets = [
     Dataset(
-        name="a",
-        values=X_a,
-        stage_ids=[1, 1, 1, 2, 3],
+        name='demand',
+        values=df['demand'],
+        stage_ids=len(df),
     ),
     Dataset(
-        name="b",
-        values=X_b,
-        stage_ids=[1, 2, 3],
+        name='pv_gen',
+        values=df['pv_gen'],
+        stage_ids=len(df),
     )
 ]
 dataset_loader = DatasetsLoader(datasets=datasets)
@@ -53,7 +51,7 @@ tree_builder = FTC(
     num_variables_per_stage=num_variables_per_stage,
     stage_ids=stage_ids
 )
-scenario_trees = tree_builder.generate_scenario_trees(initial_stage_id_to_cluster=1)
+scenario_trees = tree_builder.generate_scenario_trees(initial_stage_id_to_cluster=1, stage_columns_mapping='')
 
 save_json(
     output_dir=".",
