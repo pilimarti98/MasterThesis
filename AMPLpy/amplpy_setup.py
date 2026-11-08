@@ -1,8 +1,5 @@
+import pandas as pd
 from amplpy import AMPL, modules
-
-from config.config import CONFIG
-from InputData.DataRequests.request_all_data import align_future_data
-from InputData.helper.data_helper import float_converter
 
 def run_ampl():
     """ Option to run AMPL ems.run locally"""
@@ -14,8 +11,14 @@ def run_ampl():
     store = ampl.get_variable("Store").get_values().to_pandas()
     benefit = ampl.get_objective("Total_Benefit").value
 
+    df = pd.DataFrame()
+    df['Sell[t]'] = sell
+    df['Buy[t]'] = buy
+    df['Store[t]'] = store
+
     print('Total Benefit:', benefit)
-    print(sell.join(buy, lsuffix='_sell', rsuffix='_buy'))
+
+    return df, benefit
 
 if __name__ == '__main__':
     run_ampl()
