@@ -19,7 +19,6 @@ from config.config import CONFIG
 """
 
 df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/merged.csv", parse_dates=["Timestamp"], index_col="Timestamp")
-df = df.tz_convert("UTC") if df.index.tz else df     # avoids 23/25-hour DST days
 
 df["date"], df["hour"] = df.index.date, df.index.hour
 
@@ -33,8 +32,6 @@ solar = to_daily('generatedPV')
 common = demand.index.intersection(price.index).intersection(solar.index)
 demand, price, solar = (x.loc[common].to_numpy() for x in (demand, price, solar))
 
-# Stages are your modelling choice. Example: price is stage 1 (day-ahead
-# bid), consumption and solar are stage 2.
 datasets = [
     Dataset(name="price",       values=price, stage_ids=24*[1]),
     Dataset(name="consumption", values=demand,  stage_ids=24*[2]),

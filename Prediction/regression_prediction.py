@@ -106,10 +106,10 @@ def return_best_predictor():
     mlp.index = mlp.index.strftime("%Y-%m-%dT%H:%MZ")
     gradboost.index = gradboost.index.strftime("%Y-%m-%dT%H:%MZ")
     if mlp_mae > gradboost_mae:
-        logging.info("Using predicted values from Gradient Booster")
+        print("Using predicted values from Gradient Booster")
         return gradboost
     else:
-        logging.info("Using predicted values from Multi-Layer Perceptron")
+        print("Using predicted values from Multi-Layer Perceptron")
         return mlp
 
 if __name__ == '__main__':
