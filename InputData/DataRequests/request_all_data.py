@@ -31,12 +31,16 @@ def align_data_by_timestamp():
         join='inner'
     ).reset_index()
 
+    end_date = pd.to_datetime(merged['Timestamp'].iloc[-1])
+    year = str(end_date.year)
+    month = str(end_date.month)
+
     # Modifications for better readability
-    merged = merged.rename(columns={'Market Price [€/kWh]': 'marketprice','Demand [kWh]':'demand', 'ac_kw': 'generatedPV'})
+    merged = merged.rename(columns={'ac_kw': 'pv_gen'})
 
     # Save directly into directories for processing further
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/merged.csv", index=False)  # For Predictions
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/merged.csv", index=False) # For RStudio
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_merged.csv", index=False)  # For Predictions
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_merged.csv", index=False) # For RStudio
     return merged
 
 
@@ -55,7 +59,7 @@ def align_future_data():
     # Cleanup of merged dataframe
     merged['timestamp'] = merged.index
     merged = merged.drop(columns=['poa_wm2', 't_cell', 'dc_kw', 'dow', 'weekend', 'lag24', 'lag48'])
-    merged = merged.rename(columns={'ac_kw': 'pv_gen', 'Market Price [€/kWh]': 'market_price'})
+    merged = merged.rename(columns={'ac_kw': 'pv_gen'})
 
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/day_ahead_merged.csv", index=False)  # For RStudio
     return merged

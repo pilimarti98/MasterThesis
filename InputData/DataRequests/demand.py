@@ -28,7 +28,12 @@ def get_metering_data(data_token, start_data, end_data, resolution="one_hour", e
 def get_demand():
     """ Get demand data, limited to 30 days """
     token = get_token()
-    start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
+    # To get the dates, first check for the start date and end date fields
+    if CONFIG["ENV"]["START_DATE"] != '' and CONFIG["ENV"]["END_DATE"] != '':
+        start, end = CONFIG["ENV"]["START_DATE"], CONFIG["ENV"]["END_DATE"]
+    # Otherwise, get dates via offset and timedelta
+    else:
+        start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     data = get_metering_data(token, start, end)
     for meter in data:
         if meter.get("error"):
@@ -40,9 +45,12 @@ def get_demand():
             df = df.drop(columns=['productionKwh'])
             df = df.dropna()
             df["Timestamp"] = (pd.to_datetime(df["Timestamp"]))
+            end_date = pd.to_datetime(df['Timestamp'].iloc[0])
+            year = str(end_date.year)
+            month = str(end_date.month)
             df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_demand.csv")
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_demand.csv") # Save to RStudio project
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_demand.csv")
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_demand.csv") # Save to RStudio project
             return df
 
 if __name__ == "__main__":

@@ -41,10 +41,10 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
         # Make necessary modifications to data
         df_price = turn_csv_str_into_df(price)
         df_price = df_price.drop(columns=['Ajatempel (UTC)'])
-        df_price = df_price.rename(columns={'Kuupäev (Eesti aeg)': 'Timestamp', 'NPS Eesti': 'Market Price [€/MWh]'})
+        df_price = df_price.rename(columns={'Kuupäev (Eesti aeg)': 'Timestamp', 'NPS Eesti': 'market_price(€/MWh)'})
 
         df_price["Timestamp"] = pd.to_datetime(df_price["Timestamp"], dayfirst=True)
-        df_price['Market Price [€/MWh]'] = pd.to_numeric(df_price['Market Price [€/MWh]'].str.replace(',','.'), errors='coerce')
+        df_price['market_price(€/MWh)'] = pd.to_numeric(df_price['market_price(€/MWh)'].str.replace(',','.'), errors='coerce')
 
         df_price = (
             df_price.set_index("Timestamp")
@@ -52,30 +52,37 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
                     .mean(numeric_only=True)
                     .reset_index()
         )
-
+        start_date = pd.to_datetime(df_price['Timestamp'].iloc[0])
+        year = str(start_date.year)
+        month = str(start_date.month)
         df_price["Timestamp"] = df_price["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
-        df_price['Market Price [€/MWh]'] = df_price['Market Price [€/MWh]']/ 1000.0 # Convert the price variable to €/kWh
-        df_price = df_price.rename(columns={'Market Price [€/MWh]':'Market Price [€/kWh]'})
+        df_price['market_price(€/MWh)'] = df_price['market_price(€/MWh)']/ 1000.0 # Convert the price variable to €/kWh
+        df_price = df_price.rename(columns={'market_price(€/MWh)':'market_price(€/kWh)'})
 
         if forecast:
             # Send csv to Data directory
-            df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/forecast_market_price.csv")
-            df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/forecast_market_price.csv")  # Save to RStudio project
+            df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_forecast_market_price.csv")
+            df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_forecast_market_price.csv")  # Save to RStudio project
             return df_price
         else:
             # Send csv to Data directory
             df_price.to_csv(
-                f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_market_price.csv")
+                f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_market_price.csv")
             df_price.to_csv(
-                f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_market_price.csv")  # Save to RStudio project
+                f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_market_price.csv")  # Save to RStudio project
             return df_price
     else:
         raise ValueError("No data was returned")
 
 def historical_and_predicted_market_price():
     """ Function to get both historical and forecast pv generation values. """
-    start_price, end_price = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
-    day_ahead_start, day_ahead_end = get_day_ahead()
+    # To get the dates, first check for the start date and end date fields
+    if CONFIG["ENV"]["START_DATE"] != '' and CONFIG["ENV"]["END_DATE"] != '':
+        start_price, end_price = CONFIG["ENV"]["START_DATE"], CONFIG["ENV"]["END_DATE"]
+    # Otherwise, get dates via offset and timedelta
+    else:
+        start_price, end_price = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
+    day_ahead_start, day_ahead_end = get_day_ahead(last_timestamp=end_price)
 
     # Request and store results
     historical = get_market_price(start_date=start_price, end_date=end_price)

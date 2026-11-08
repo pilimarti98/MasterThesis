@@ -35,19 +35,27 @@ def simulate_pv(wx: pd.DataFrame, forecast:bool = False):
 
     result = pd.DataFrame({"poa_wm2": poa["poa_global"], "t_cell":t_cell,
                          "dc_kw": dc_kw, "ac_kw":ac_kw})
+    start_date = pd.to_datetime(result.index[0])
+    year = str(start_date.year)
+    month = str(start_date.month)
     result.index = result.index.strftime("%Y-%m-%dT%H:%MZ")
     if forecast:
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/forecast_pv_gen.csv")
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/forecast_pv_gen.csv")  # Save to RStudio project
+        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_forecast_pv_gen.csv")
+        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_forecast_pv_gen.csv")  # Save to RStudio project
     else:
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_pv_gen.csv")
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_pv_gen.csv") # Save to RStudio project
+        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_pv_gen.csv")
+        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_pv_gen.csv") # Save to RStudio project
     return result
 
 def get_pv_simulation():
     """ Function to get both historical and forecast pv generation values. """
-    start_weather, end_weather = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"], to_open_meteo=True)
-    forecasted_day = get_day_ahead(to_open_meteo=True)
+    # To get the dates, first check for the start date and end date fields
+    if CONFIG["ENV"]["START_DATE"] != '' and CONFIG["ENV"]["END_DATE"] != '':
+        start_weather, end_weather = CONFIG["ENV"]["START_DATE"][:10], CONFIG["ENV"]["END_DATE"][:10]
+    # Otherwise, get dates via offset and timedelta
+    else:
+        start_weather, end_weather = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"], to_open_meteo=True)
+    forecasted_day = get_day_ahead(last_timestamp=end_weather, to_open_meteo=True)
 
     # Get the solar data
     historical = historical_weather(start_date=start_weather, end_date=end_weather)
