@@ -44,7 +44,10 @@ def get_demand():
             df = df.rename(columns={'periodStart': 'Timestamp', 'consumptionKwh': 'demand'})
             df = df.drop(columns=['productionKwh'])
             df = df.dropna()
-            df["Timestamp"] = (pd.to_datetime(df["Timestamp"]))
+            df["Timestamp"] = (
+                pd.to_datetime(df["Timestamp"])
+                .dt.tz_convert("UTC")
+            )
             end_date = pd.to_datetime(df['Timestamp'].iloc[0])
             year = str(end_date.year)
             month = str(end_date.month)

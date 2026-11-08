@@ -23,9 +23,6 @@ def get_dates(offset = None, timedelta = None, to_open_meteo:bool=False, to_mark
     now = datetime.now(timezone.utc)
     now = now.replace(hour=0, minute=0, second=0, microsecond=0) # Split the data from historical until today at 00:00h
 
-    if to_market:
-        now = now - pd.Timedelta(hours=2)
-
     # Parse the type ISO8601 into a more readable format
     offset = (now - isodate.parse_duration(offset)).strftime("%Y-%m-%dT%H:%MZ")
     timedelta = (now - isodate.parse_duration(timedelta)).strftime("%Y-%m-%dT%H:%MZ")
@@ -50,7 +47,6 @@ def get_day_ahead(last_timestamp, to_open_meteo:bool=False):
 
     if to_open_meteo:
         return day_ahead_start[:10]
-    # initial = initial - pd.Timedelta(hours=2) # Change from EET to UTC
     day_ahead_start = (initial + pd.Timedelta(days=1)).strftime("%Y-%m-%dT%H:%MZ")
     day_ahead_end = (initial + pd.Timedelta(days=1,hours=23)).strftime("%Y-%m-%dT%H:%MZ")
     return day_ahead_start, day_ahead_end
