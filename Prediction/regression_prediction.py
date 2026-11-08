@@ -1,5 +1,3 @@
-import logging
-
 import pandas as pd
 import numpy as np
 from requests import HTTPError
@@ -17,7 +15,10 @@ def load_dataset():
         df = get_demand()
     except HTTPError:
         # In case the API call falls, relay on the database
-        df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_demand.csv")
+        start_date = pd.to_datetime(CONFIG["ENV"]["START_DATE"])
+        year = str(start_date.year)
+        month = str(start_date.month)
+        df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_demand.csv")
         df = df.drop(columns=['Unnamed: 0'])
     df.index = pd.to_datetime(df['Timestamp'])
     df = df.set_index('Timestamp').sort_index()

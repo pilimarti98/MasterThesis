@@ -1,13 +1,17 @@
-"""
-Solar prediction can be done via a combination of:
-Open Meteo forecast values + PVLib simulation based on the forecasted values
-"""
+from time import strftime
+
 import pandas as pd
 import pvlib.location
+from datetime import date, datetime
 
 from InputData.helper.data_helper import float_converter, get_dates, get_day_ahead
 from InputData.DataRequests.weather_and_solar import historical_weather, forecast_weather
 from config.config import CONFIG
+
+"""
+Solar prediction can be done via a combination of:
+Open Meteo forecast values + PVLib simulation based on the forecasted values
+"""
 
 def simulate_pv(wx: pd.DataFrame, forecast:bool = False):
     """ Given the fetched data, simulate as the generation of a solar panel with given characteristics """
@@ -58,8 +62,14 @@ def get_pv_simulation():
     forecasted_day = get_day_ahead(last_timestamp=end_weather, to_open_meteo=True)
 
     # Get the solar data
+    end_weather = pd.to_datetime(end_weather) - pd.Timedelta(days=1)
+    end_weather = end_weather.strftime("%Y-%m-%d")
     historical = historical_weather(start_date=start_weather, end_date=end_weather)
-    forecast = forecast_weather(start_date=forecasted_day, end_date=forecasted_day)
+    d = datetime.strptime(forecasted_day, "%Y-%m-%d").date()
+    if d < date.today():
+        forecast = historical_weather(start_date=forecasted_day, end_date=forecasted_day)
+    else:
+        forecast = forecast_weather(start_date=forecasted_day, end_date=forecasted_day)
 
     # Simulate and store results
     historical_results = simulate_pv(historical)
