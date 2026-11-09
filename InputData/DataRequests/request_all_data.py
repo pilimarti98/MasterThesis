@@ -1,6 +1,8 @@
 import pandas as pd
 import glob
 
+from pandas.errors import EmptyDataError
+
 from InputData.DataRequests.pv_simulation import get_pv_simulation
 from InputData.DataRequests.elering_market import historical_and_predicted_market_price
 from InputData.DataRequests.demand import get_demand
@@ -78,14 +80,29 @@ def merge_all_dfs(future:bool=False):
     lst = []
 
     for filename in all_files:
-        df = pd.read_csv(filename, index_col=None, header=0)
-        lst.append(df)
-    merged_df = pd.concat(lst, axis=0, ignore_index=True)
-    merged_df = merged_df.set_index('timestamp').sort_index()
-    return merged_df
+        try:
+            df = pd.read_csv(filename, index_col=None, header=0)
+            lst.append(df)
+        except EmptyDataError:
+            print(f"No data found for {filename}")
+            pass
+    merged = pd.concat(lst, axis=0, ignore_index=True)
+    merged = merged.set_index('timestamp').sort_index()
+    if future:
+        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/FULL_DAY_AHEAD_merged.csv",
+                      index=False)  # For Predictions
+        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/FULL_DAY_AHEAD_historical_merged.csv",
+                      index=False)  # For RStudio
+    else:
+        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/FULL_HISTORICAL_merged.csv",
+                      index=False)  # For Predictions
+        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/FULL_HISTORICAL_merged.csv",
+                      index=False)  # For RStudio
+
+    return merged
 
 if __name__ == "__main__":
     #align_data_by_timestamp()
     #align_future_data()
-    merge_all_dfs()
+    #merge_all_dfs()
     merge_all_dfs(True)
