@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from InputData.helper.data_helper import get_dates, get_day_ahead
 from InputData.helper.APIClient import Server, ApiClient
@@ -44,7 +45,10 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
         df_price = df_price.rename(columns={'Kuupäev (Eesti aeg)': 'Timestamp', 'NPS Eesti': 'market_price(€/MWh)'})
 
         df_price["Timestamp"] = (pd.to_datetime(df_price["Timestamp"], dayfirst=True)
-                                    .dt.tz_localize("Europe/Helsinki")   # EET, handles DST automatically
+                                    .dt.tz_localize("Europe/Helsinki",
+                                          ambiguous=np.full(len(df_price), False),   # treat ambiguous times as EET (UTC+2)
+                                          nonexistent="shift_forward",
+                                      )
                                     .dt.tz_convert("UTC"))
 
         df_price['market_price(€/MWh)'] = pd.to_numeric(df_price['market_price(€/MWh)'].str.replace(',','.'), errors='coerce')

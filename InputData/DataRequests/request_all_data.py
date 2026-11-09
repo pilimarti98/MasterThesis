@@ -1,4 +1,5 @@
 import pandas as pd
+import glob
 
 from InputData.DataRequests.pv_simulation import get_pv_simulation
 from InputData.DataRequests.elering_market import historical_and_predicted_market_price
@@ -39,8 +40,8 @@ def align_data_by_timestamp():
     merged = merged.rename(columns={'ac_kw': 'pv_gen'})
 
     # Save directly into directories for processing further
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_merged.csv", index=False)  # For Predictions
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_merged.csv", index=False) # For RStudio
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_historical_merged.csv", index=False)  # For Predictions
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_historical_merged.csv", index=False) # For RStudio
     return merged
 
 
@@ -68,6 +69,23 @@ def align_future_data():
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_day_ahead_merged.csv", index=False)  # For RStudio
     return merged
 
+def merge_all_dfs(future:bool=False):
+    path = f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data"
+    if future:
+        all_files = glob.glob(path + '/*_day_ahead_merged.csv')
+    else:
+        all_files = glob.glob(path + '/*_historical_merged.csv')
+    lst = []
+
+    for filename in all_files:
+        df = pd.read_csv(filename, index_col=None, header=0)
+        lst.append(df)
+    merged_df = pd.concat(lst, axis=0, ignore_index=True)
+    merged_df = merged_df.set_index('timestamp').sort_index()
+    return merged_df
+
 if __name__ == "__main__":
-    align_data_by_timestamp()
-    align_future_data()
+    #align_data_by_timestamp()
+    #align_future_data()
+    merge_all_dfs()
+    merge_all_dfs(True)
