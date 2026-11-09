@@ -43,7 +43,10 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
         df_price = df_price.drop(columns=['Ajatempel (UTC)'])
         df_price = df_price.rename(columns={'Kuupäev (Eesti aeg)': 'Timestamp', 'NPS Eesti': 'market_price(€/MWh)'})
 
-        df_price["Timestamp"] = pd.to_datetime(df_price["Timestamp"], dayfirst=True)
+        df_price["Timestamp"] = (pd.to_datetime(df_price["Timestamp"], dayfirst=True)
+                                    .dt.tz_localize("Europe/Helsinki")   # EET, handles DST automatically
+                                    .dt.tz_convert("UTC"))
+
         df_price['market_price(€/MWh)'] = pd.to_numeric(df_price['market_price(€/MWh)'].str.replace(',','.'), errors='coerce')
 
         df_price = (

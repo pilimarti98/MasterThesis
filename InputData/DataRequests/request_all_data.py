@@ -31,7 +31,7 @@ def align_data_by_timestamp():
         join='inner'
     ).reset_index()
 
-    end_date = pd.to_datetime(merged['Timestamp'].iloc[-1])
+    end_date = pd.to_datetime(merged['Timestamp'].iloc[0])
     year = str(end_date.year)
     month = str(end_date.month)
 
@@ -50,6 +50,9 @@ def align_future_data():
     pv_gen = get_pv_simulation()[1]
     market_price = historical_and_predicted_market_price()[1]
     market_price = market_price.set_index('Timestamp')
+    end_date = pd.to_datetime(market_price.index[0])
+    year = str(end_date.year)
+    month = str(end_date.month)
     dataframes = [pv_gen, market_price, demand]
     merged = pd.concat(
         dataframes,
@@ -61,7 +64,8 @@ def align_future_data():
     merged = merged.drop(columns=['poa_wm2', 't_cell', 'dc_kw', 'dow', 'weekend', 'lag24', 'lag48'])
     merged = merged.rename(columns={'ac_kw': 'pv_gen'})
 
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/day_ahead_merged.csv", index=False)  # For RStudio
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_day_ahead_merged.csv",index=False)
+    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_day_ahead_merged.csv", index=False)  # For RStudio
     return merged
 
 if __name__ == "__main__":
