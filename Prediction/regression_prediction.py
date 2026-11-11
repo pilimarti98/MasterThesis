@@ -76,6 +76,7 @@ def build_gradient_boosting_model():
     # Get predictions
     predict_response = model.predict(predict_dataset)
     predict_dataset['demand'] = predict_response
+    predict_dataset.loc[predict_dataset['demand'] <0, 'demand'] = 0 # Mask to eliminate any negative values (since they are impossible)
     return predict_dataset, mean_absolute_error(y_test, model.predict(X_test))
 
 def build_mlp_regressor_model():
@@ -94,6 +95,7 @@ def build_mlp_regressor_model():
     # Get predictions
     predict_response = model.predict(predict_dataset)
     predict_dataset['demand'] = predict_response
+    predict_dataset.loc[predict_dataset['demand'] <0, 'demand'] = 0 # Mask to eliminate any negative values (since they are impossible)
     return predict_dataset, mean_absolute_error(y_test, model.predict(X_test))
 
 def return_best_predictor():

@@ -17,6 +17,7 @@ def create_data_for_ampl():
     # Modify hours, to start from 1 instead of 0
 
     with open(f"{year}_{month}_ems.dat", "w") as f:
+        print(f"Generating file: {year}_{month}_ems.dat")
         f.write(f'param Timestamp := {len(df)};\n')  # Set hour int values from df length
         f.write(
             f'param agg_rate := {CONFIG["ENV"]["AGG_RATE"]};\nparam dem_rate := {CONFIG["ENV"]["DEMAND_RATE"]};\n')  # Initialize rate params

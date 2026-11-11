@@ -2,6 +2,7 @@ import pandas as pd
 from amplpy import AMPL, modules
 from string import Template
 from pathlib import Path
+import calendar
 
 RUN_TEMPLATE = Template("""\
 reset;
@@ -48,15 +49,31 @@ def only_battery_sim():
 def base_sim():
     """ Generate simulation without EMS """
 
-import calendar
-def run_month_sample(dates):
+def scenarios():
+    """ Simulate the different scenarios: No EMS, Only battery, full EMS """
+    # First scenario: No Battery or PV
+
+    # Second scenario: Only Battery (No PV)
+
+    # Third scenario: Full System (Battery + PV)
+
+
+def projected_yearly_benefits(dates):
+    """ Simplified economical assessment for the previous year """
     yr_benefit = 0.0
-    benefit_per_month = []
+    benefit_per_month = {}
     for year, month in dates:
         _, benefit = run_ampl(str(year), str(month))
-        benefit_per_month.append(benefit * calendar.monthrange(year, month)[1])
+        monthly_benefit = benefit * calendar.monthrange(year, month)[1]
+        benefit_per_month[f"{year}_{month}"] = monthly_benefit
         yr_benefit += float(benefit * calendar.monthrange(year, month)[1])
-    return yr_benefit
+    return benefit_per_month, yr_benefit
+
+def roi():
+    battery_cost = 0.0
+    pv_cost = 0.0
+    maintenance = 0.0
+    installation = 0.0
 
 if __name__ == '__main__':
     previous_yr_dates = [
@@ -74,4 +91,4 @@ if __name__ == '__main__':
         [2026, 10],
         [2026, 11]
     ]
-    run_month_sample(dates=previous_yr_dates)
+    projected_yearly_benefits(dates=previous_yr_dates)
