@@ -15,6 +15,7 @@ param market_price {1..Timestamp} >=0; # Estimation of market price [€/kWh]
 # Rates
 param agg_rate >=0; # rate the aggregator requires [€/kWh]
 param dem_rate >=0; # rate charged on top of market price for consumption [€/kWh]
+param vat_rate >=0; # VAT rate
 
 #Storing
 param store0 >=0;
