@@ -4,6 +4,7 @@ from string import Template
 from pathlib import Path
 import calendar
 
+from InputData.helper.data_helper import float_converter
 from config.config import CONFIG
 
 ONLY_BATTERY_RUN = Template("""\
@@ -84,6 +85,8 @@ def projected_yearly_benefits(year:int, month:int, pw:int = 5):
 
     # Process Base Case
     """ Get results df and multiply Demand * (market_price + dem_rate)"""
+    base_case_df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/DayAheadcsv/{year}_{month}_{pw}kW_day_ahead_merged.csv")
+    base_case_cost_per_month = (base_case_df['market_price'] * base_case_df['demand']).sum() * (-1) * float_converter("VAT_RATE") * (1+float_converter("DEMAND_RATE"))
 
     # Process Battery
     battery_cost_per_month = battery_cost * calendar.monthrange(year, month)[1]
@@ -94,4 +97,4 @@ def projected_yearly_benefits(year:int, month:int, pw:int = 5):
     ems_cost_per_month = ems_benefit * calendar.monthrange(year, month)[1]
     # Store dfs to Results dir
     ems_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/EMS/{str(year)}{str(month)}_ems.csv")
-    return battery_cost_per_month, ems_cost_per_month
+    return base_case_cost_per_month, battery_cost_per_month, ems_cost_per_month
