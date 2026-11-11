@@ -44,11 +44,9 @@ def simulate_pv(wx: pd.DataFrame, forecast:bool = False):
     month = str(start_date.month)
     result.index = result.index.strftime("%Y-%m-%dT%H:%MZ")
     if forecast:
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_forecast_pv_gen.csv")
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_forecast_pv_gen.csv")  # Save to RStudio project
+        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/PV_Gen/{year}_{month}_forecast_pv_gen.csv")
     else:
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_pv_gen.csv")
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_pv_gen.csv") # Save to RStudio project
+        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/PV_Gen/{year}_{month}_pv_gen.csv")
     return result
 
 def get_pv_simulation():

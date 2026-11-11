@@ -52,8 +52,7 @@ def get_demand():
             year = str(end_date.year)
             month = str(end_date.month)
             df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_demand.csv")
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_demand.csv") # Save to RStudio project
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Demand/{year}_{month}_demand.csv")
             return df
 
 if __name__ == "__main__":

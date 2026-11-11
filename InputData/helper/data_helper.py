@@ -38,35 +38,15 @@ def get_dates(offset = None, timedelta = None, to_open_meteo:bool=False, to_mark
 
 def get_day_ahead(last_timestamp, to_open_meteo:bool=False):
     """ Get the Day Ahead start and end time """
-    # Split the data from historical until today at 00:00h
+    # Split the data from historical until firs day of next month
     initial = pd.to_datetime(last_timestamp)
     initial = initial.replace(hour=0, minute=0, second=0, microsecond=0)
 
     # Parse the type ISO8601 into a more readable format
-    day_ahead_start = (initial + pd.Timedelta(days=1)).strftime("%Y-%m-%dT%H:%MZ")
+    day_ahead_start = initial.strftime("%Y-%m-%dT%H:%MZ")
 
     if to_open_meteo:
         return day_ahead_start[:10]
-    day_ahead_start = (initial + pd.Timedelta(days=1)).strftime("%Y-%m-%dT%H:%MZ")
-    day_ahead_end = (initial + pd.Timedelta(days=1,hours=23)).strftime("%Y-%m-%dT%H:%MZ")
+    day_ahead_start = initial.strftime("%Y-%m-%dT%H:%MZ")
+    day_ahead_end = (initial + pd.Timedelta(hours=23)).strftime("%Y-%m-%dT%H:%MZ")
     return day_ahead_start, day_ahead_end
-
-def clean_data_dir():
-    """ delete all data files from the Data directory """
-    answer = input("About to delete all files, are you sure? (Y/n): ").strip().lower()
-    if answer in ("y", "yes"):
-        folder = f'{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data'
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
-    if answer in ("n", "no"):
-        return
-
-if __name__ == "__main__":
-    clean_data_dir()

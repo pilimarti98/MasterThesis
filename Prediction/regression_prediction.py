@@ -18,7 +18,7 @@ def load_dataset():
         start_date = pd.to_datetime(CONFIG["ENV"]["START_DATE"])
         year = str(start_date.year)
         month = str(start_date.month)
-        df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_demand.csv")
+        df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Demand/{year}_{month}_demand.csv")
         df = df.drop(columns=['Unnamed: 0'])
     df.index = pd.to_datetime(df['Timestamp'])
     df = df.set_index('Timestamp').sort_index()
@@ -58,7 +58,7 @@ def split_dataset():
     # Get dataset with timestamp of demand values to predict
     day_ahead = last - pd.Timedelta(days=1)
     n_test = (df.index > day_ahead).sum()  # rows in the last day
-    future_idx = pd.date_range(df.index[-1] + pd.Timedelta(days=1, hours=1), periods=24, freq='h')
+    future_idx = pd.date_range(df.index[-1] + pd.Timedelta(hours=1), periods=24, freq='h')
     full = pd.concat([df, pd.DataFrame(index=future_idx)])
     predict = get_timestamp_features(df_feat=full).iloc[-n_test:]
     predict = predict.drop(columns='demand')

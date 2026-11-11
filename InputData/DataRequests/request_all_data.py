@@ -43,14 +43,15 @@ def align_data_by_timestamp():
 
     # Save directly into directories for processing further
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_historical_merged.csv", index=False)  # For Predictions
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_historical_merged.csv", index=False) # For RStudio
     return merged
 
 
 def align_future_data():
     """ Function to get forecasted aligned data. """
     demand = return_best_predictor()
+    demand['Timestamp'] = demand.index
     pv_gen = get_pv_simulation()[1]
+    pv_gen['Timestamp'] = pv_gen.index
     market_price = historical_and_predicted_market_price()[1]
     market_price = market_price.set_index('Timestamp')
     end_date = pd.to_datetime(market_price.index[0])
@@ -63,12 +64,11 @@ def align_future_data():
         join='inner'
     )
     # Cleanup of merged dataframe
-    merged['timestamp'] = merged.index
+    merged = merged.loc[:, ~merged.columns.duplicated(keep='last')]
     merged = merged.drop(columns=['poa_wm2', 't_cell', 'dc_kw', 'dow', 'weekend', 'lag24', 'lag48'])
     merged = merged.rename(columns={'ac_kw': 'pv_gen'})
 
     merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_day_ahead_merged.csv",index=False)
-    merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/{year}_{month}_day_ahead_merged.csv", index=False)  # For RStudio
     return merged
 
 def merge_all_dfs(future:bool=False):
@@ -87,22 +87,19 @@ def merge_all_dfs(future:bool=False):
             print(f"No data found for {filename}")
             pass
     merged = pd.concat(lst, axis=0, ignore_index=True)
-    merged = merged.set_index('timestamp').sort_index()
+    merged = merged.set_index('Timestamp').sort_index()
+    merged['Timestamp'] = merged.index
     if future:
-        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/FULL_DAY_AHEAD_merged.csv",
+        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/MegaMerge/FULL_DAY_AHEAD_merged.csv",
                       index=False)  # For Predictions
-        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/FULL_DAY_AHEAD_historical_merged.csv",
-                      index=False)  # For RStudio
     else:
-        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/FULL_HISTORICAL_merged.csv",
+        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/MegaMerge/FULL_HISTORICAL_merged.csv",
                       index=False)  # For Predictions
-        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/FULL_HISTORICAL_merged.csv",
-                      index=False)  # For RStudio
 
     return merged
 
 if __name__ == "__main__":
     #align_data_by_timestamp()
     #align_future_data()
-    #merge_all_dfs()
+    merge_all_dfs()
     merge_all_dfs(True)
