@@ -28,12 +28,12 @@ def pv_scenarios():
             df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/DayAheadcsv/{year}_{month}_{pw}kW_day_ahead_merged.csv")
 
             # Generate .dat files for each case
-            for case in ['base_case', 'only_battery', 'ems']:
+            for case in ['only_battery', 'ems']:
                 with open(f"{year}_{month}_{pw}_{case}.dat", "w") as f:
                     print(f"Generating file: {year}_{month}_{pw}_{case}.dat")
                     f.write(f'param Timestamp := {len(df)};\n')  # Set hour int values from df length
                     f.write(
-                        f'param agg_rate := {CONFIG["ENV"]["AGG_RATE"]};\nparam dem_rate := {CONFIG["ENV"]["DEMAND_RATE"]};\n')  # Initialize rate params
+                        f'param agg_rate := {CONFIG["ENV"]["AGG_RATE"]};\nparam dem_rate := {CONFIG["ENV"]["DEMAND_RATE"]};\n\nparam vat_rate := {CONFIG["ENV"]["VAT_RATE"]}')  # Initialize rate params
                     f.write(
                         f'param store0 := {CONFIG["ENV"]["INITIAL_STORING"]};\nparam battery_capacity := {CONFIG["ENV"]["BATTERY_CAPACITY"]};\n')  # Initialize storing params
                     f.write(f'param: pv_gen demand market_price :=\n')  # Initialize parameters for day ahead dataframe
