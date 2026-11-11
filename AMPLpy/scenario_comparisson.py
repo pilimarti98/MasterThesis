@@ -58,4 +58,4 @@ def run_ampl_scenarios():
     return base_case_dict, battery_dict, ems_dict
 
 if __name__ == '__main__':
-    run_ampl_scenarios()
+    pv_scenarios()

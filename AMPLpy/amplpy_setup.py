@@ -6,17 +6,6 @@ import calendar
 
 from config.config import CONFIG
 
-BASE_CASE_RUN = Template("""\
-reset;
-model base_case.mod;
-data ${year}_${month}_${pw}_ems.dat;
-option solver minos; 
-solve;
-
-display Total_Cost;
-display {t in 1..Timestamp}(Buy[t], demand[t]);
-""")
-
 ONLY_BATTERY_RUN = Template("""\
 reset;
 model only_battery.mod;
@@ -40,25 +29,8 @@ display {t in 1..Timestamp}(pv_gen[t], Discharge[t], SoC[t], Buy[t], Sell[t], St
 """)
 
 def run_ampl(year:str, month:str, pw:int):
-    """ Simulate the different scenarios: No EMS, Only battery, full EMS """
-    # First scenario: No Battery or PV
-    base_case_path = Path(f"{year}_{month}_{str(pw)}_base_case.run")
-    base_case_path.write_text(
-        BASE_CASE_RUN.substitute(year=year, month=month, pw=str(pw)),
-        encoding='utf-8'
-    )
-    ampl = AMPL()
-    ampl.read(str(base_case_path))
-    buy = ampl.get_variable("Buy").get_values().to_pandas()
-    market_price = ampl.get_parameter("market_price").get_values().to_pandas()
-    base_case_cost = ampl.get_objective("Total_Cost").value()
-    base_case_df = pd.DataFrame()
-    base_case_df['Buy[t]'] = buy
-    base_case_df['market_price[t]'] = market_price
-
-
-
-    # Second scenario: Only Battery (No PV)
+    """ Simulate the different scenarios: Only battery, full EMS """
+    # First scenario: Only Battery (No PV)
     only_battery_path = Path(f"{year}_{month}_{str(pw)}_only_battery.run")
     only_battery_path.write_text(
         ONLY_BATTERY_RUN.substitute(year=year, month=month, pw=str(pw)),
@@ -77,11 +49,11 @@ def run_ampl(year:str, month:str, pw:int):
     battery_df['Store[t]'] = store
     battery_df['Discharge[t]'] = discharge
     battery_df['SoC[t]'] = soc
-    base_case_df['market_price[t]'] = market_price
+    battery_df['market_price[t]'] = market_price
 
 
 
-    # Third scenario: Full System (Battery + PV)
+    # Second scenario: Full System (Battery + PV)
     ems_path = Path(f"{year}_{month}_{str(pw)}_ems.run")
     ems_path.write_text(
         EMS_RUN.substitute(year=year, month=month, pw=str(pw)),
@@ -102,18 +74,16 @@ def run_ampl(year:str, month:str, pw:int):
     ems_df['Store[t]'] = store
     ems_df['Discharge[t]'] = discharge
     ems_df['SoC[t]'] = soc
-    base_case_df['market_price[t]'] = market_price
+    ems_df['market_price[t]'] = market_price
 
-    return base_case_df, battery_df, ems_df, base_case_cost, battery_cost, ems_benefit
+    return battery_df, ems_df, battery_cost, ems_benefit
 
 def projected_yearly_benefits(year:int, month:int, pw:int = 5):
     """ Simplified economical assessment for the previous year """
-    base_case_df, battery_df, ems_df, base_case_cost, battery_cost, ems_benefit = run_ampl(str(year), str(month), pw=pw)
+    battery_df, ems_df, battery_cost, ems_benefit = run_ampl(str(year), str(month), pw=pw)
 
     # Process Base Case
-    base_case_cost_per_month = base_case_cost * calendar.monthrange(year, month)[1]
-    # Store dfs to Results dir
-    base_case_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/BaseCase/{str(year)}{str(month)}_basecase.csv")
+    """ Get results df and multiply Demand * (market_price + dem_rate)"""
 
     # Process Battery
     battery_cost_per_month = battery_cost * calendar.monthrange(year, month)[1]
@@ -124,4 +94,4 @@ def projected_yearly_benefits(year:int, month:int, pw:int = 5):
     ems_cost_per_month = ems_benefit * calendar.monthrange(year, month)[1]
     # Store dfs to Results dir
     ems_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/EMS/{str(year)}{str(month)}_ems.csv")
-    return base_case_cost_per_month, battery_cost_per_month, ems_cost_per_month
+    return battery_cost_per_month, ems_cost_per_month
