@@ -22,7 +22,7 @@ param battery_capacity >=0; # Battery capacity in kWh
 
 # Surplus/Deficit
 param surplus {t in 1..Timestamp} := max(pv_gen[t] - demand[t], 0);
-param deficit {t in 1..Timestamp} := max(demand[t] - gen_pv[t], 0);
+param deficit {t in 1..Timestamp} := max(demand[t] - pv_gen[t], 0);
 
 # Variables
 var Sell {1..Timestamp} >= 0; # Whether to sell to the aggregator
