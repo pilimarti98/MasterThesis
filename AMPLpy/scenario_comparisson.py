@@ -51,7 +51,7 @@ def run_ampl_scenarios():
         for start, end in dates:
             year = pd.to_datetime(end).year
             month = pd.to_datetime(end).month
-            battery_cost, ems_cost = projected_yearly_benefits(year=year, month=month, pw=pw)
+            base_case_cost, battery_cost, ems_cost = projected_yearly_benefits(year=year, month=month, pw=pw)
             base_case_dict[f'{year}_{month}_{pw}'] = base_case_cost
             battery_dict[f'{year}_{month}_{pw}'] = battery_cost
             ems_dict[f'{year}_{month}_{pw}'] = ems_cost
