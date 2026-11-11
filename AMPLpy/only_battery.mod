@@ -32,8 +32,8 @@ var Buy {1..Timestamp} >= 0; # Amount to use for own consumption
 var Discharge {1..Timestamp} >= 0; # Energy taken from battery
 var SoC {1..Timestamp} >= 0, <= battery_capacity; # Battery level at the end of t
 
-# Maximize benefits at the end of the day
-maximize Total_Benefit:
+# Minimize costs at the end of the day
+minimize Total_Cost:
 	sum {t in 1..Timestamp} market_price[t] * (Buy[t] * (1 + dem_rate));
 
 subject to Energy_Balance {t in 1..Timestamp}:
