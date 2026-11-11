@@ -47,7 +47,7 @@ def align_data_by_timestamp(start_time, end_time):
     return merged
 
 
-def align_future_data(start_time, end_time):
+def align_future_data(start_time:str = CONFIG["ENV"]["START_DATE"], end_time:str = CONFIG["ENV"]["END_DATE"]):
     """ Function to get forecasted aligned data. """
     demand = return_best_predictor(start_time, end_time)
     demand['Timestamp'] = demand.index
@@ -109,4 +109,4 @@ def run_all_functions():
 
 
 if __name__ == "__main__":
-    run_all_functions()
+    align_future_data()
