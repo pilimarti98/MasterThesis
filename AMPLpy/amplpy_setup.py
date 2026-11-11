@@ -100,7 +100,7 @@ def run_ampl(year:str, month:str):
 
     return base_case_df, battery_df, ems_df, base_case_cost, battery_cost, ems_benefit
 
-def projected_yearly_benefits(dates):
+def projected_yearly_benefits(dates, pw:int = 5):
     """ Simplified economical assessment for the previous year """
     yr_benefit = 0.0
     benefit_per_month = {}
@@ -110,9 +110,9 @@ def projected_yearly_benefits(dates):
         benefit_per_month[f"{year}_{month}"] = monthly_benefit
         yr_benefit += float(ems_benefit * calendar.monthrange(year, month)[1])
         # Store dfs to Results dir
-        base_case_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{year}{month}_basecase.csv")
-        battery_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{year}{month}_battery.csv")
-        ems_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{year}{month}_ems.csv")
+        base_case_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/BaseCase/{year}{month}_basecase.csv")
+        battery_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/Battery/{year}{month}_battery.csv")
+        ems_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/EMS/{year}{month}_ems.csv")
     print(benefit_per_month, yr_benefit)
     return benefit_per_month, yr_benefit
 

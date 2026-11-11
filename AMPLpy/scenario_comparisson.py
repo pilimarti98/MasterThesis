@@ -24,7 +24,7 @@ def pv_scenarios():
             # New pv_generation
             _, day_ahead = get_pv_simulation(start, end, pdc0=pw)
             df['pv_gen'] = day_ahead['pv_gen']
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_{pw}kW_day_ahead_merged.csv")
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/DayAheadcsv/{year}_{month}_{pw}kW_day_ahead_merged.csv")
             for case in ['base_case', 'only_battery', 'ems']:
                 with open(f"{year}_{month}_ems.dat", "w") as f:
                     print(f"Generating file: {year}_{month}_{case}.dat")
