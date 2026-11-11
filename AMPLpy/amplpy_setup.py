@@ -9,7 +9,7 @@ def run_ampl():
     sell = ampl.get_variable("Sell").get_values().to_pandas()
     buy = ampl.get_variable("Buy").get_values().to_pandas()
     store = ampl.get_variable("Store").get_values().to_pandas()
-    benefit = ampl.get_objective("Total_Benefit").value
+    benefit = ampl.get_objective("Total_Benefit").value()
 
     df = pd.DataFrame()
     df['Sell[t]'] = sell
