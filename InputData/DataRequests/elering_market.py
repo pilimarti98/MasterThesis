@@ -78,14 +78,8 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
     else:
         raise ValueError("No data was returned")
 
-def historical_and_predicted_market_price():
+def historical_and_predicted_market_price(start_price:str=CONFIG["ENV"]["START_DATE"], end_price:str=CONFIG["ENV"]["END_DATE"]):
     """ Function to get both historical and forecast pv generation values. """
-    # To get the dates, first check for the start date and end date fields
-    if CONFIG["ENV"]["START_DATE"] != '' and CONFIG["ENV"]["END_DATE"] != '':
-        start_price, end_price = CONFIG["ENV"]["START_DATE"], CONFIG["ENV"]["END_DATE"]
-    # Otherwise, get dates via offset and timedelta
-    else:
-        start_price, end_price = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     day_ahead_start, day_ahead_end = get_day_ahead(last_timestamp=end_price)
 
     # Request and store results

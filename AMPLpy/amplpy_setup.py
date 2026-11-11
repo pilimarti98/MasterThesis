@@ -4,6 +4,8 @@ from string import Template
 from pathlib import Path
 import calendar
 
+from config.config import CONFIG
+
 BASE_CASE_RUN = Template("""\
 reset;
 model base_case.mod;
@@ -107,14 +109,12 @@ def projected_yearly_benefits(dates):
         monthly_benefit = ems_benefit * calendar.monthrange(year, month)[1]
         benefit_per_month[f"{year}_{month}"] = monthly_benefit
         yr_benefit += float(ems_benefit * calendar.monthrange(year, month)[1])
+        # Store dfs to Results dir
+        base_case_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{year}{month}_basecase.csv")
+        battery_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{year}{month}_battery.csv")
+        ems_df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{year}{month}_ems.csv")
     print(benefit_per_month, yr_benefit)
     return benefit_per_month, yr_benefit
-
-def roi():
-    battery_cost = 0.0
-    pv_cost = 0.0
-    maintenance = 0.0
-    installation = 0.0
 
 if __name__ == '__main__':
     previous_yr_dates = [

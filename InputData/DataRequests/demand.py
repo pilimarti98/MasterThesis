@@ -25,15 +25,9 @@ def get_metering_data(data_token, start_data, end_data, resolution="one_hour", e
     r.raise_for_status()
     return r.json()
 
-def get_demand():
+def get_demand(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
     """ Get demand data, limited to 30 days """
     token = get_token()
-    # To get the dates, first check for the start date and end date fields
-    if CONFIG["ENV"]["START_DATE"] != '' and CONFIG["ENV"]["END_DATE"] != '':
-        start, end = CONFIG["ENV"]["START_DATE"], CONFIG["ENV"]["END_DATE"]
-    # Otherwise, get dates via offset and timedelta
-    else:
-        start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     data = get_metering_data(token, start, end)
     for meter in data:
         if meter.get("error"):

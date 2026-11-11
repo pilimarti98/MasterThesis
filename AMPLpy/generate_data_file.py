@@ -3,12 +3,12 @@ from config.config import CONFIG
 
 import pandas as pd
 
-def create_data_for_ampl():
+def create_data_for_ampl(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
     """
     Function to request the merged dataframe with the predicted values for day ahead,
     and generate a .dat file suited for AMPL
     """
-    df = align_future_data()
+    df = align_future_data(start, end)
     df = df.rename(columns={'market_price(€/kWh)':'market_price'})
     df['hour'] = df['hour'] + 1
     end_date = pd.to_datetime(df['Timestamp'].iloc[0])

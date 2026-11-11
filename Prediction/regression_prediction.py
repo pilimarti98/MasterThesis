@@ -9,10 +9,10 @@ from sklearn.neural_network import MLPRegressor
 from InputData.DataRequests.demand import get_demand
 from config.config import CONFIG
 
-def load_dataset():
+def load_dataset(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
     """ Load Historical Demand Data for a month """
     try:
-        df = get_demand()
+        df = get_demand(start, end)
     except HTTPError:
         # In case the API call falls, relay on the database
         start_date = pd.to_datetime(CONFIG["ENV"]["START_DATE"])
@@ -24,7 +24,7 @@ def load_dataset():
     df = df.set_index('Timestamp').sort_index()
     return df
 
-def split_dataset():
+def split_dataset(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
     """ Split data from input data (X) and the response (y) """
 
     def get_timestamp_features(df_feat:pd.DataFrame):
@@ -39,7 +39,7 @@ def split_dataset():
         return df_feat
 
     # Get demand dataset
-    df = load_dataset()
+    df = load_dataset(start, end)
     df.index = pd.to_datetime(df.index)
 
     # Chronological split: last 7 days as test
@@ -64,9 +64,9 @@ def split_dataset():
     predict = predict.drop(columns='demand')
     return X_train, X_test, y_train, y_test, predict
 
-def build_gradient_boosting_model():
+def build_gradient_boosting_model(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
     """ Build GradientBoosting predictor """
-    X_train, X_test, y_train, y_test, predict_dataset = split_dataset()
+    X_train, X_test, y_train, y_test, predict_dataset = split_dataset(start, end)
     model = GradientBoostingRegressor(n_estimators=200, max_depth=3, learning_rate=0.05, subsample=0.8, random_state=42)
     model.fit(X_train, y_train)
 
@@ -79,9 +79,9 @@ def build_gradient_boosting_model():
     predict_dataset.loc[predict_dataset['demand'] <0, 'demand'] = 0 # Mask to eliminate any negative values (since they are impossible)
     return predict_dataset, mean_absolute_error(y_test, model.predict(X_test))
 
-def build_mlp_regressor_model():
+def build_mlp_regressor_model(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
     """ Build Multi-Layer Perceptron Regressor """
-    X_train, X_test, y_train, y_test, predict_dataset = split_dataset()
+    X_train, X_test, y_train, y_test, predict_dataset = split_dataset(start, end)
     model = MLPRegressor(hidden_layer_sizes=(32,16),
                          alpha=1e-3,
                          early_stopping=True,
@@ -98,12 +98,12 @@ def build_mlp_regressor_model():
     predict_dataset.loc[predict_dataset['demand'] <0, 'demand'] = 0 # Mask to eliminate any negative values (since they are impossible)
     return predict_dataset, mean_absolute_error(y_test, model.predict(X_test))
 
-def return_best_predictor():
+def return_best_predictor(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
     """
     Since we had two methods, the one with the smallest MAE will be selected for the model
     """
-    mlp, mlp_mae = build_mlp_regressor_model()
-    gradboost, gradboost_mae = build_gradient_boosting_model()
+    mlp, mlp_mae = build_mlp_regressor_model(start, end)
+    gradboost, gradboost_mae = build_gradient_boosting_model(start, end)
 
     # Set timestamps back to ISO format
     mlp.index = mlp.index.strftime("%Y-%m-%dT%H:%MZ")
