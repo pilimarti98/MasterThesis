@@ -44,18 +44,25 @@ def pv_scenarios():
 def run_ampl_scenarios():
     dates = get_all_dates()
     power_cases = [5, 10, 50, 100]
-    base_case_dict = dict()
-    battery_dict = dict()
-    ems_dict = dict()
     for pw in power_cases:
+        base_case_dict = dict()
+        battery_dict = dict()
+        ems_dict = dict()
         for start, end in dates:
             year = pd.to_datetime(end).year
             month = pd.to_datetime(end).month
             base_case_cost, battery_cost, ems_cost = projected_yearly_benefits(year=year, month=month, pw=pw)
             base_case_dict[f'{year}_{month}_{pw}'] = base_case_cost
             battery_dict[f'{year}_{month}_{pw}'] = battery_cost
-            ems_dict[f'{year}_{month}_{pw}'] = ems_cost
-    return base_case_dict, battery_dict, ems_dict
+            ems_dict[f'{year}_{month}_{pw}'] = ems_cost * -1 # To be in alignment with other columns, ems_cost > 0 indicates cost and < 0 indicates gains
+        print(f'Generating df for case {pw}')
+        total_cost = pd.DataFrame({
+            'base_case' : base_case_dict,
+            'battery_case' : battery_dict,
+            'ems_case' : ems_dict
+        })
+        total_cost.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/total_cost.csv")
+
 
 if __name__ == '__main__':
     run_ampl_scenarios()
