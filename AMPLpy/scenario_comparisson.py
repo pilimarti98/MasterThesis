@@ -17,7 +17,7 @@ def pv_scenarios():
             year = pd.to_datetime(end).year
             month = pd.to_datetime(end).month
             # To get results, must generate new .dat files and ROI
-            # In this function, new csv files are generated
+            # In this function, new csv files are generated for the Day Ahead Merged Data
             df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_day_ahead_merged.csv")
             df = df.rename(columns={'market_price(€/kWh)': 'market_price'})
             df['hour'] = df['hour'] + 1  # Modify hours, to start from 1 instead of 0
@@ -40,6 +40,27 @@ def pv_scenarios():
                     for _, r in df.iterrows():
                         f.write(f"{int(r['hour'])} {r['pv_gen']} {r['demand']} {r['market_price']}\n")
                     f.write(";\n")
+
+def recreate_historical_pv_gen():
+    """ Recreate the different pw scenarios and rewrite csv historical merged files """
+    dates = get_all_dates()
+    power_cases = [5, 10, 50, 100]
+    for pw in power_cases:
+        for start, end in dates:
+            year = pd.to_datetime(start).year
+            month = pd.to_datetime(start).month
+            # To get results, must generate new .dat files and ROI
+            # In this function, new csv files are generated
+            df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{year}_{month}_historical_merged.csv")
+            df = df.rename(columns={'market_price(€/kWh)': 'market_price'})
+
+            # New pv_generation
+            historical, _ = get_pv_simulation(start, end, pdc0=pw)
+            df['poa_wm2'] = historical['poa_wm2'].values
+            df['t_cell'] = historical['t_cell'].values
+            df['dc_kw'] = historical['dc_kw'].values
+            df['ac_kw'] = historical['ac_kw'].values
+            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{pw}/{year}_{month}_{pw}kW_historical_merged.csv")
 
 def run_ampl_scenarios():
     dates = get_all_dates()
@@ -65,5 +86,6 @@ def run_ampl_scenarios():
 
 
 if __name__ == '__main__':
-    pv_scenarios()
-    run_ampl_scenarios()
+    #pv_scenarios()
+    #run_ampl_scenarios()
+    recreate_historical_pv_gen()

@@ -73,29 +73,31 @@ def align_future_data(start_time:str = CONFIG["ENV"]["START_DATE"], end_time:str
     return merged
 
 def merge_all_dfs(future:bool=False):
-    path = f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data"
-    if future:
-        all_files = glob.glob(path + '/*_day_ahead_merged.csv')
-    else:
-        all_files = glob.glob(path + '/*_historical_merged.csv')
-    lst = []
+    for pw in [5,10,50,100]:
+        hist_path = f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/{pw}"
+        future_path = f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/DayAheadcsv"
+        if future:
+            all_files = glob.glob(future_path + '/*kW_day_ahead_merged.csv')
+        else:
+            all_files = glob.glob(hist_path + '/*kW_historical_merged.csv')
+        lst = []
 
-    for filename in all_files:
-        try:
-            df = pd.read_csv(filename, index_col=None, header=0)
-            lst.append(df)
-        except EmptyDataError:
-            print(f"No data found for {filename}")
-            pass
-    merged = pd.concat(lst, axis=0, ignore_index=True)
-    merged = merged.set_index('Timestamp').sort_index()
-    merged['Timestamp'] = merged.index
-    if future:
-        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/MegaMerge/FULL_DAY_AHEAD_merged.csv",
-                      index=False)  # For Predictions
-    else:
-        merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/MegaMerge/FULL_HISTORICAL_merged.csv",
-                      index=False)  # For Predictions
+        for filename in all_files:
+            try:
+                df = pd.read_csv(filename, index_col=None, header=0)
+                lst.append(df)
+            except EmptyDataError:
+                print(f"No data found for {filename}")
+                pass
+        merged = pd.concat(lst, axis=0, ignore_index=True)
+        merged = merged.set_index('Timestamp').sort_index()
+        merged['Timestamp'] = merged.index
+        if future:
+            merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/MegaMerge/{pw}/FULL_DAY_AHEAD_merged.csv",
+                          index=False)  # For Predictions
+        else:
+            merged.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/MegaMerge/{pw}/FULL_HISTORICAL_merged.csv",
+                          index=False)  # For Predictions
 
     return merged
 
@@ -109,4 +111,4 @@ def run_all_functions():
 
 
 if __name__ == "__main__":
-    align_future_data()
+    merge_all_dfs(True)
