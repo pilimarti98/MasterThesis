@@ -4,7 +4,6 @@ import requests
 from InputData.helper.data_helper import get_dates
 from config.config import CONFIG
 
-
 def get_token() -> str:
     r = requests.post(CONFIG["ENV"]["TOKEN_URL"], data={
         "grant_type": "client_credentials",
@@ -15,7 +14,7 @@ def get_token() -> str:
     return r.json()['access_token']
 
 def get_metering_data(data_token, start_data, end_data, resolution="one_hour", eics=None):
-    """ Make a request to get consumption data from Elering for a specific meter, in kWh """
+    """ Make a request to get demand data from Elering for a specific meter, in kWh """
     # Limits: max 31 dats and 10 EICs per request, ~1 request/ 5s
     params = {"startDateTime":start_data, "endDateTime": end_data, "resolution": resolution}
     if eics:
@@ -26,10 +25,9 @@ def get_metering_data(data_token, start_data, end_data, resolution="one_hour", e
     r.raise_for_status()
     return r.json()
 
-def get_consumption():
-    """ Get consumption data, limited to 30 days """
+def get_demand(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"], save:bool=False):
+    """ Get demand data, limited to 30 days """
     token = get_token()
-    start, end = get_dates(offset=CONFIG["ENV"]["OFFSET"], timedelta=CONFIG["ENV"]["TIMEDELTA"])
     data = get_metering_data(token, start, end)
     for meter in data:
         if meter.get("error"):
@@ -37,14 +35,20 @@ def get_consumption():
             continue
         else:
             df = pd.DataFrame(meter['accountingIntervals'])
-            df = df.rename(columns={'periodStart': 'Timestamp', 'consumptionKwh': 'consumption'})
+            df = df.rename(columns={'periodStart': 'Timestamp', 'consumptionKwh': 'demand'})
             df = df.drop(columns=['productionKwh'])
             df = df.dropna()
-            df["Timestamp"] = (pd.to_datetime(df["Timestamp"]))
+            df["Timestamp"] = (
+                pd.to_datetime(df["Timestamp"])
+                .dt.tz_convert("UTC")
+            )
+            end_date = pd.to_datetime(df['Timestamp'].iloc[0])
+            year = str(end_date.year)
+            month = str(end_date.month)
             df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/historical_consumption.csv")
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/MasterThesisRStudio/Data/historical_consumption.csv") # Save to RStudio project
+            if save:
+                df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Demand/{year}_{month}_demand.csv")
             return df
 
 if __name__ == "__main__":
-    get_consumption()
+    get_demand()
