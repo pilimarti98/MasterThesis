@@ -20,7 +20,7 @@ def create_data_for_ampl(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["
         print(f"Generating file: {year}_{month}_ems.dat")
         f.write(f'param Timestamp := {len(df)};\n')  # Set hour int values from df length
         f.write(
-            f'param agg_rate := {CONFIG["ENV"]["AGG_RATE"]};\nparam dem_rate := {CONFIG["ENV"]["DEMAND_RATE"]};\nparam vat_rate := {CONFIG["ENV"]["VAT_RATE"]};\n')  # Initialize rate params
+            f'param agg_rate := {CONFIG["ENV"]["AGG_RATE"]};\nparam dem_rate := {CONFIG["ENV"]["DEMAND_RATE"]};\n')  # Initialize rate params
         f.write(
             f'param store0 := {CONFIG["ENV"]["INITIAL_STORING"]};\nparam battery_capacity := {CONFIG["ENV"]["BATTERY_CAPACITY"]};\n')  # Initialize storing params
         f.write(f'param: pv_gen demand market_price :=\n')  # Initialize parameters for day ahead dataframe

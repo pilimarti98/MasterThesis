@@ -86,7 +86,7 @@ def projected_yearly_benefits(year:int, month:int, pw:int = 5):
     # Process Base Case
     """ Get results df and multiply Demand * (market_price + dem_rate) """
     base_case_df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/Results/{pw}/DayAheadcsv/{year}_{month}_{pw}kW_day_ahead_merged.csv")
-    base_case_cost_per_month = (base_case_df['market_price'] * base_case_df['demand']).sum() * float_converter("VAT_RATE") * (1+float_converter("DEMAND_RATE")) * calendar.monthrange(year, month)[1]
+    base_case_cost_per_month = (base_case_df['market_price'] * base_case_df['demand']).sum() * (1+float_converter("DEMAND_RATE")) * calendar.monthrange(year, month)[1]
 
     # Process Battery
     battery_cost_per_month = battery_cost * calendar.monthrange(year, month)[1]

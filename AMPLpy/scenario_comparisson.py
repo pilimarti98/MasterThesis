@@ -33,7 +33,7 @@ def pv_scenarios():
                     print(f"Generating file: {year}_{month}_{pw}_{case}.dat")
                     f.write(f'param Timestamp := {len(df)};\n')  # Set hour int values from df length
                     f.write(
-                        f'param agg_rate := {CONFIG["ENV"]["AGG_RATE"]};\nparam dem_rate := {CONFIG["ENV"]["DEMAND_RATE"]};\nparam vat_rate := {CONFIG["ENV"]["VAT_RATE"]};\n')  # Initialize rate params
+                        f'param agg_rate := {CONFIG["ENV"]["AGG_RATE"]};\nparam dem_rate := {CONFIG["ENV"]["DEMAND_RATE"]};\n')  # Initialize rate params
                     f.write(
                         f'param store0 := {CONFIG["ENV"]["INITIAL_STORING"]};\nparam battery_capacity := {CONFIG["ENV"]["BATTERY_CAPACITY"]};\n')  # Initialize storing params
                     f.write(f'param: pv_gen demand market_price :=\n')  # Initialize parameters for day ahead dataframe
@@ -52,9 +52,9 @@ def run_ampl_scenarios():
             year = pd.to_datetime(end).year
             month = pd.to_datetime(end).month
             base_case_cost, battery_cost, ems_cost = projected_yearly_benefits(year=year, month=month, pw=pw)
-            base_case_dict[f'{year}_{month}_{pw}'] = base_case_cost
-            battery_dict[f'{year}_{month}_{pw}'] = battery_cost
-            ems_dict[f'{year}_{month}_{pw}'] = ems_cost * -1 # To be in alignment with other columns, ems_cost > 0 indicates cost and < 0 indicates gains
+            base_case_dict[f'{year}_{month}'] = base_case_cost
+            battery_dict[f'{year}_{month}'] = battery_cost
+            ems_dict[f'{year}_{month}'] = ems_cost * -1 # To be in alignment with other columns, ems_cost > 0 indicates cost and < 0 indicates gains
         print(f'Generating df for case {pw}')
         total_cost = pd.DataFrame({
             'base_case' : base_case_dict,
@@ -65,4 +65,5 @@ def run_ampl_scenarios():
 
 
 if __name__ == '__main__':
+    pv_scenarios()
     run_ampl_scenarios()

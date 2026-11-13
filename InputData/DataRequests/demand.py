@@ -25,7 +25,7 @@ def get_metering_data(data_token, start_data, end_data, resolution="one_hour", e
     r.raise_for_status()
     return r.json()
 
-def get_demand(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
+def get_demand(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"], save:bool=False):
     """ Get demand data, limited to 30 days """
     token = get_token()
     data = get_metering_data(token, start, end)
@@ -46,7 +46,8 @@ def get_demand(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END
             year = str(end_date.year)
             month = str(end_date.month)
             df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%dT%H:%MZ")
-            df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Demand/{year}_{month}_demand.csv")
+            if save:
+                df.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Demand/{year}_{month}_demand.csv")
             return df
 
 if __name__ == "__main__":

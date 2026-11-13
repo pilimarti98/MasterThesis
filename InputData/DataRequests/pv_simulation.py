@@ -11,7 +11,7 @@ Solar prediction can be done via a combination of:
 Open Meteo forecast values + PVLib simulation based on the forecasted values
 """
 
-def simulate_pv(wx: pd.DataFrame, forecast:bool = False, pdc0:float=None):
+def simulate_pv(wx: pd.DataFrame, forecast:bool = False, pdc0:float=None, save:bool=False):
     """ Given the fetched data, simulate as the generation of a solar panel with given characteristics """
     location = pvlib.location.Location(float_converter("LAT"), float_converter("LON"), altitude=float_converter("ALT"), tz="UTC")
 
@@ -42,10 +42,11 @@ def simulate_pv(wx: pd.DataFrame, forecast:bool = False, pdc0:float=None):
     year = str(start_date.year)
     month = str(start_date.month)
     result.index = result.index.strftime("%Y-%m-%dT%H:%MZ")
-    if forecast:
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/PV_Gen/{year}_{month}_forecast_pv_gen.csv")
-    else:
-        result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/PV_Gen/{year}_{month}_pv_gen.csv")
+    if save:
+        if forecast:
+            result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/PV_Gen/{year}_{month}_forecast_pv_gen.csv")
+        else:
+            result.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/PV_Gen/{year}_{month}_pv_gen.csv")
     return result
 
 def get_pv_simulation(start_weather:str=CONFIG["ENV"]["START_DATE"], end_weather:str=CONFIG["ENV"]["END_DATE"], pdc0:float=None):

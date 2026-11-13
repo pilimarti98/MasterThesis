@@ -27,7 +27,7 @@ def call_api(path: str, params: dict):
 
     return response
 
-def get_market_price(start_date: str, end_date:str, forecast:bool=False):
+def get_market_price(start_date: str, end_date:str, forecast:bool=False, save:bool=False):
     """ Request NordPool day-ahead price data in CSV file """
 
     path = "/api/nps/price/csv"
@@ -66,15 +66,16 @@ def get_market_price(start_date: str, end_date:str, forecast:bool=False):
         df_price['market_price(€/MWh)'] = df_price['market_price(€/MWh)']/ 1000.0 # Convert the price variable to €/kWh
         df_price = df_price.rename(columns={'market_price(€/MWh)':'market_price(€/kWh)'})
 
-        if forecast:
-            # Send csv to Data directory
-            df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Market_Prices/{year}_{month}_forecast_market_price.csv")
-            return df_price
-        else:
-            # Send csv to Data directory
-            df_price.to_csv(
-                f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Market_Prices/{year}_{month}_market_price.csv")
-            return df_price
+        if save:
+            if forecast:
+                # Send csv to Data directory
+                df_price.to_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Market_Prices/{year}_{month}_forecast_market_price.csv")
+                return df_price
+            else:
+                # Send csv to Data directory
+                df_price.to_csv(
+                    f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Market_Prices/{year}_{month}_market_price.csv")
+                return df_price
     else:
         raise ValueError("No data was returned")
 
