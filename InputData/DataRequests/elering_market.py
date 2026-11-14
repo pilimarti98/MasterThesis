@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from InputData.helper.data_helper import get_dates, get_day_ahead
+from InputData.helper.data_helper import get_day_ahead
 from InputData.helper.APIClient import Server, ApiClient
 from InputData.helper.data_helper import turn_csv_str_into_df
 from config.config import CONFIG

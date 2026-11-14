@@ -38,7 +38,7 @@ maximize Total_Benefit:
 subject to Energy_Balance {t in 1..Timestamp}:
 	demand[t] + Sell[t] + Store[t] = pv_gen[t] + Buy[t] + Discharge[t];
 
-# Limit how much can be sold: as much as has been generated
+# Limit how much can be sold: more than it has been generated
 subject to Solar_Balance {t in 1..Timestamp}:
 	pv_gen[t] >= Sell[t];
 
@@ -64,4 +64,4 @@ subject to Init_Storing:
 
 # Limit the storing capacity to the battery's capacity
 subject to Storing_Limit {t in 1..Timestamp}:
-	Store[t] + Store[t-1] <= battery_capacity;
+	Store[t] <= battery_capacity;

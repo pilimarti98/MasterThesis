@@ -34,6 +34,8 @@ var SoC {1..Timestamp} >= 0, <= battery_capacity; # Battery level at the end of 
 # Minimize costs at the end of the day
 minimize Total_Cost:
 	sum {t in 1..Timestamp} market_price[t] * (Buy[t] * (1 + dem_rate));
+	
+	
 
 subject to Energy_Balance {t in 1..Timestamp}:
 	demand[t] + Store[t] = Buy[t] + Discharge[t];
@@ -48,4 +50,4 @@ subject to Init_Storing:
 
 # Limit the storing capacity to the battery's capacity
 subject to Storing_Limit {t in 1..Timestamp}:
-	Store[t] + Store[t-1] <= battery_capacity;
+	Store[t] <= battery_capacity;

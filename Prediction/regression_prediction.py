@@ -2,11 +2,16 @@ import pandas as pd
 import numpy as np
 from requests import HTTPError
 
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import (
+    mean_absolute_percentage_error,
+    mean_absolute_error,
+    mean_squared_error
+)
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.neural_network import MLPRegressor
 
 from InputData.DataRequests.demand import get_demand
+from InputData.helper.data_helper import get_all_dates
 from config.config import CONFIG
 
 def load_dataset(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
@@ -15,7 +20,7 @@ def load_dataset(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["E
         df = get_demand(start, end)
     except HTTPError:
         # In case the API call falls, relay on the database
-        start_date = pd.to_datetime(CONFIG["ENV"]["START_DATE"])
+        start_date = pd.to_datetime(start)
         year = str(start_date.year)
         month = str(start_date.month)
         df = pd.read_csv(f"{CONFIG["ENV"]["PATH_TO_DIR"]}/InputData/Data/Demand/{year}_{month}_demand.csv")
@@ -71,13 +76,16 @@ def build_gradient_boosting_model(start:str=CONFIG["ENV"]["START_DATE"], end:str
     model.fit(X_train, y_train)
 
     # Analyze results
+    print(f"Predicted test values: {model.predict(X_test)}")
+    print(f"Test response: {y_test}")
     print("Model MAE: ", mean_absolute_error(y_test, model.predict(X_test)))
+    print("Model Squared error: ", mean_squared_error(y_test, model.predict(X_test)))
 
     # Get predictions
     predict_response = model.predict(predict_dataset)
     predict_dataset['demand'] = predict_response
     predict_dataset.loc[predict_dataset['demand'] <0, 'demand'] = 0 # Mask to eliminate any negative values (since they are impossible)
-    return predict_dataset, mean_absolute_error(y_test, model.predict(X_test))
+    return predict_dataset, mean_absolute_error(y_test, model.predict(X_test)), mean_squared_error(y_test, model.predict(X_test))
 
 def build_mlp_regressor_model(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
     """ Build Multi-Layer Perceptron Regressor """
@@ -90,20 +98,23 @@ def build_mlp_regressor_model(start:str=CONFIG["ENV"]["START_DATE"], end:str=CON
     model.fit(X_train, y_train)
 
     # Analyze results
+    print(f"Predicted test values: {model.predict(X_test)}")
+    print(f"Test response: {y_test}")
     print("Model MAE: ", mean_absolute_error(y_test, model.predict(X_test)))
+    print("Model Squared error: ", mean_squared_error(y_test, model.predict(X_test)))
 
     # Get predictions
     predict_response = model.predict(predict_dataset)
     predict_dataset['demand'] = predict_response
     predict_dataset.loc[predict_dataset['demand'] <0, 'demand'] = 0 # Mask to eliminate any negative values (since they are impossible)
-    return predict_dataset, mean_absolute_error(y_test, model.predict(X_test))
+    return predict_dataset, mean_absolute_error(y_test, model.predict(X_test)), mean_squared_error(y_test, model.predict(X_test))
 
 def return_best_predictor(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG["ENV"]["END_DATE"]):
     """
     Since we had two methods, the one with the smallest MAE will be selected for the model
     """
-    mlp, mlp_mae = build_mlp_regressor_model(start, end)
-    gradboost, gradboost_mae = build_gradient_boosting_model(start, end)
+    mlp, mlp_mae, _ = build_mlp_regressor_model(start, end)
+    gradboost, gradboost_mae, _ = build_gradient_boosting_model(start, end)
 
     # Set timestamps back to ISO format
     mlp.index = mlp.index.strftime("%Y-%m-%dT%H:%MZ")
@@ -115,5 +126,30 @@ def return_best_predictor(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG[
         print("Using predicted values from Multi-Layer Perceptron")
         return mlp
 
+
+def return_errors():
+    """
+    Since we had two methods, the one with the smallest MAE will be selected for the model
+    """
+    total_mae = {}
+    total_mse = {}
+    for start, end in get_all_dates():
+        start_year = pd.to_datetime(start).year
+        start_month = pd.to_datetime(start).month
+        _, mlp_mae, mlp_mse = build_mlp_regressor_model(start, end)
+        _, gradboost_mae, gradboost_mse = build_gradient_boosting_model(start, end)
+
+        if mlp_mae > gradboost_mae:
+            print("Using predicted values from Gradient Booster")
+            total_mae[f'{start_year}_{start_month}'] = gradboost_mae
+            total_mse[f'{start_year}_{start_month}'] = gradboost_mse
+        else:
+            print("Using predicted values from Multi-Layer Perceptron")
+            total_mae[f'{start_year}_{start_month}'] = mlp_mae
+            total_mse[f'{start_year}_{start_month}'] = mlp_mse
+    df = pd.DataFrame({"MAE":total_mae, "MSE":total_mse})
+    df.to_csv("Errors.csv")
+    return df
+
 if __name__ == '__main__':
-    return_best_predictor()
+    return_errors()

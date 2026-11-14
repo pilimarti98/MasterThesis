@@ -27,7 +27,7 @@ var Buy {1..Timestamp} >= 0; # Amount to use for own consumption
 
 # Minimize cost at the end of the day
 maximize Total_Benefit:
-	sum {t in 1..Timestamp} (Sell[t] * pv_gen[t] * (market_price[t] - agg_rate
+	sum {t in 1..Timestamp} (Sell[t] * pv_gen[t] * (market_price[t] - agg_rate)
 							 - Buy[t] * demand[t] * (market_price[t] - dem_rate)));
 					
 subject to Energy_Balance {t in 1..Timestamp}:
@@ -55,4 +55,4 @@ subject to Init_Storing:
 
 # Limit the storing capacity to the battery's capacity
 subject to Storing_Limit {t in 1..Timestamp}:
-	Store[t] + Store[t-1] <= battery_capacity;
+	Store[t] <= battery_capacity;
