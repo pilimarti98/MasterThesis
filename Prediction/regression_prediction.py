@@ -129,7 +129,7 @@ def return_best_predictor(start:str=CONFIG["ENV"]["START_DATE"], end:str=CONFIG[
 
 def return_errors():
     """
-    Since we had two methods, the one with the smallest MAE will be selected for the model
+    Generate a csv file with the MAE and MSE for each month of the study
     """
     total_mae = {}
     total_mse = {}
